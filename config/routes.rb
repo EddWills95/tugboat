@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  # DDNS Settings routes
+  get "ddns_settings", to: "ddns_settings#index"
+  patch "ddns_settings", to: "ddns_settings#update"
+  post "ddns_settings/toggle_service", as: :toggle_service_ddns_settings
+  post "ddns_settings/start_service", as: :start_service_ddns_settings
+  post "ddns_settings/stop_service", as: :stop_service_ddns_settings
+  post "ddns_settings/restart_service", as: :restart_service_ddns_settings
+
   resources :projects do
     member do
       post :deploy

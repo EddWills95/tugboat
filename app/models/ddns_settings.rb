@@ -14,16 +14,70 @@ class DdnsSettings < ApplicationRecord
   def status
     return :disabled unless enabled?
     return :error if last_error.present?
-    return :updating if updating?
-    return :healthy if config_file_valid? && last_update.present?
+    return :updating if container_running? && needs_update?
+    return :healthy if container_running? && config_file_valid?
+    return :stopped if !container_running? && configured?
 
     :unknown
   end
 
   def updating?
     # Check if the ddns-updater container is currently running/updating
-    # This could be determined by checking container status or file timestamps
-    false # Placeholder for now
+    container_running?
+  end
+
+  def container_running?
+    # Check if the ddns-updater container is running
+    result = system("docker ps --filter 'name=tugboat-ddns' --filter 'status=running' -q | grep -q .")
+    result == true
+  end
+
+  def container_exists?
+    # Check if the ddns-updater container exists (running or stopped)
+    result = system("docker ps -a --filter 'name=tugboat-ddns' -q | grep -q .")
+    result == true
+  end
+
+  def start_container!
+    return false unless enabled? && configured?
+
+    # Generate config file first
+    return false unless generate_config_file!
+
+    begin
+      if container_exists?
+        # Start existing container
+        system("docker start tugboat-ddns")
+      else
+        # Run new container (should be handled by docker-compose)
+        system("docker-compose up -d ddns-updater")
+      end
+
+      update!(last_error: nil)
+      true
+    rescue => e
+      update!(last_error: "Failed to start container: #{e.message}")
+      false
+    end
+  end
+
+  def stop_container!
+    begin
+      if container_running?
+        system("docker stop tugboat-ddns")
+        update!(last_error: nil)
+      end
+      true
+    rescue => e
+      update!(last_error: "Failed to stop container: #{e.message}")
+      false
+    end
+  end
+
+  def restart_container!
+    stop_container!
+    sleep(2) # Give it a moment to stop
+    start_container!
   end
 
   def needs_update?
@@ -116,18 +170,31 @@ class DdnsSettings < ApplicationRecord
   end
 
   # Callback to regenerate config when settings change
-  after_update :regenerate_config_if_enabled
+  after_update :manage_container_state
 
   private
 
-  def regenerate_config_if_enabled
-    generate_config_file! if enabled? && (
-      saved_change_to_attribute?(:enabled) ||
-      saved_change_to_attribute?(:base_domain) ||
-      saved_change_to_attribute?(:aws_access_key_id) ||
-      saved_change_to_attribute?(:aws_secret_access_key) ||
-      saved_change_to_attribute?(:aws_region) ||
-      saved_change_to_attribute?(:route53_hosted_zone_id)
-    )
+  def manage_container_state
+    if saved_change_to_attribute?(:enabled)
+      if enabled?
+        # DDNS was just enabled - start the container
+        start_container! if configured?
+      else
+        # DDNS was just disabled - stop the container
+        stop_container!
+      end
+    elsif enabled? && config_settings_changed?
+      # Settings changed while enabled - restart container with new config
+      generate_config_file!
+      restart_container! if container_running?
+    end
+  end
+
+  def config_settings_changed?
+    saved_change_to_attribute?(:base_domain) ||
+    saved_change_to_attribute?(:aws_access_key_id) ||
+    saved_change_to_attribute?(:aws_secret_access_key) ||
+    saved_change_to_attribute?(:aws_region) ||
+    saved_change_to_attribute?(:route53_hosted_zone_id)
   end
 end

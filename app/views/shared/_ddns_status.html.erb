@@ -5,7 +5,7 @@
 %>
 
 <div class="px-2 py-1">
-  <%= link_to "#", class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md relative", 
+  <%= link_to ddns_settings_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md relative", 
                    title: ddns_status_tooltip(ddns_status, last_update) do %>
     
     <!-- DDNS Icon -->
@@ -25,6 +25,8 @@
         <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" title="Updating"></div>
       <% when :error %>
         <div class="w-2 h-2 bg-red-400 rounded-full animate-pulse" title="Error"></div>
+      <% when :stopped %>
+        <div class="w-2 h-2 bg-orange-400 rounded-full" title="Stopped"></div>
       <% when :disabled %>
         <div class="w-2 h-2 bg-gray-500 rounded-full" title="Disabled"></div>
       <% else %>

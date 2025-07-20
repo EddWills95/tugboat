@@ -11,6 +11,8 @@ module ApplicationHelper
       base = "DDNS encountered an error"
       base += " • Last attempt #{time_ago_in_words(last_update)} ago" if last_update
       base
+    when :stopped
+      "DDNS is enabled but container is stopped"
     when :disabled
       "Dynamic DNS is disabled"
     else

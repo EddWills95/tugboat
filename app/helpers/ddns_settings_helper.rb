@@ -1,0 +1,2 @@
+module DdnsSettingsHelper
+end
