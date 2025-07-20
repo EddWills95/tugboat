@@ -1,38 +1,90 @@
-<p style="color: green"><%= notice %></p>
+<% content_for :page_title, @project.name %>
 
-<%= render @project %>
+<div class="space-y-6">
+  <!-- Project Header -->
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold text-gray-900"><%= @project.name %></h2>
+      <div class="flex space-x-2">
+        <%= link_to "Edit", edit_project_path(@project), class: "bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded" %>
+        <%= link_to "Back to Projects", projects_path, class: "bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded" %>
+      </div>
+    </div>
+    
+    <!-- Project Details -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-gray-50 p-4 rounded">
+        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Docker Image</h3>
+        <p class="mt-1 text-lg font-semibold text-gray-900"><%= @project.docker_image %></p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded">
+        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Port</h3>
+        <p class="mt-1 text-lg font-semibold text-gray-900"><%= @project.port %></p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded">
+        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Status</h3>
+        <p class="mt-1 text-lg font-semibold">
+          <% case @project.status %>
+          <% when 'running' %>
+            <span class="text-green-600">● Running</span>
+          <% when 'stopped' %>
+            <span class="text-red-600">● Stopped</span>
+          <% else %>
+            <span class="text-gray-600">● <%= @project.status.capitalize %></span>
+          <% end %>
+        </p>
+      </div>
+    </div>
+  </div>
 
-<div>
-  <%= link_to "Edit this project", edit_project_path(@project) %> |
-  <%= link_to "Back to projects", projects_path %>  
+  <!-- Action Buttons -->
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Project Actions</h3>
+    <div class="flex flex-wrap gap-3">
+      <% case @status %>
+      <% when :not_found %>
+        <%= button_to deploy_project_path(@project), method: :post, data: { turbo: false }, class: "bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          Deploy Project
+        <% end %>
+      <% when :stopped %>
+        <%= button_to start_project_path(@project), method: :post, data: { turbo: false }, class: "bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m6-10V7a3 3 0 00-3-3H6a3 3 0 00-3 3v1"/>
+          </svg>
+          Start Project
+        <% end %>
+      <% when :running %>
+        <%= button_to stop_project_path(@project), method: :post, data: { turbo: false }, class: "bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"/>
+          </svg>
+          Stop Project
+        <% end %>
+      <% end %>
+      
+      <%= button_to @project, method: :delete, data: { confirm: "Are you sure you want to permanently delete this project? This action cannot be undone." }, class: "bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+        Delete Project
+      <% end %>
+    </div>
+  </div>
 
-
-  
-  <%= button_to "Destroy this project", @project, 
-      method: :delete, 
-      data: { confirm: "Are you sure you want to permanently delete this project? This action cannot be undone." },
-      class: "bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 border-2 border-red-800" %>
-
-  <% case @status %>
-  <% when :not_found %>
-    <%= button_to "Deploy Project", deploy_project_path(@project), method: :post, data: { turbo: false }, class: "bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" %>
-  <% when :stopped %>
-    <%= button_to "Start Project", start_project_path(@project), method: :post, data: { turbo: false }, class: "bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mr-2" %>
-  <% when :running %>
-    <%= button_to "Stop Project", stop_project_path(@project), method: :post, data: { turbo: false }, class: "bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" %>
-  <% end %>
-
-<h2 class="mt-6 font-bold">Container Logs:</h2>
-<div id="logs-container">
-  <%= turbo_frame_tag "project_logs" do %>
-    <%= render partial: "logs", locals: { logs: @logs } %>
-  <% end %>
+  <!-- Container Logs -->
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Container Logs</h3>
+    <div id="logs-container">
+      <%= turbo_frame_tag "project_logs" do %>
+        <%= render partial: "logs", locals: { logs: @logs } %>
+      <% end %>
+    </div>
+  </div>
 </div>
-
-
-
-
-  
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
@@ -44,4 +96,3 @@
     }, 3000); // every 3 seconds
   });
 </script>
-</div>

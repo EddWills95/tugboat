@@ -21,13 +21,126 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
   </head>
 
-  <body>
-    <%= yield %>
-  </body>
+  <body class="h-screen bg-gray-50">
+    <div class="flex h-full">
+      <!-- Sidebar -->
+      <div class="hidden md:flex md:w-64 md:flex-col">
+        <div class="flex min-h-0 flex-1 flex-col bg-gray-800">
+          <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
+            <!-- Logo/Brand -->
+            <div class="flex flex-shrink-0 items-center px-4">
+              <%= link_to root_path, class: "text-white text-xl font-bold" do %>
+                Tugboat
+              <% end %>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="mt-8 flex-1 space-y-1 px-2">
+              <%= link_to projects_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md #{'bg-gray-900 text-white' if current_page?(projects_path)}" do %>
+                <svg class="text-gray-400 mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                Projects
+              <% end %>
+              
+              <!-- Add more navigation items as needed -->
+              <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                <svg class="text-gray-400 mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                Dashboard
+              </a>
+              
+              <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                <svg class="text-gray-400 mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Settings
+              </a>
+            </nav>
+          </div>
+          
+          <!-- User section -->
+          <div class="flex flex-shrink-0 bg-gray-700 p-4">
+            <% if user_signed_in? %>
+              <div class="group block w-full flex-shrink-0">
+                <div class="flex items-center">
+                  <div class="h-9 w-9 rounded-full bg-gray-500 flex items-center justify-center">
+                    <span class="text-sm font-medium text-white"><%= current_user.email.first.upcase %></span>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-white truncate"><%= current_user.email %></p>
+                    <%= link_to "Sign out", destroy_user_session_path, method: :delete, class: "text-xs text-gray-300 hover:text-white" %>
+                  </div>
+                </div>
+              </div>
+            <% else %>
+              <%= link_to "Sign in", new_user_session_path, class: "text-white hover:text-gray-300" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
 
-  <% flash.each do |key, value| %>
-  <div class="p-4 my-2 border rounded bg-blue-100 text-blue-800">
-    <%= value %>
-  </div>
-<% end %>
+      <!-- Mobile menu button -->
+      <div class="md:hidden">
+        <div class="flex items-center justify-between bg-gray-800 px-4 py-3">
+          <div class="text-white text-lg font-bold">Tugboat</div>
+          <button type="button" class="text-gray-400 hover:text-white focus:outline-none focus:text-white" onclick="toggleMobileMenu()">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden bg-gray-800">
+          <div class="px-2 pt-2 pb-3 space-y-1">
+            <%= link_to projects_path, class: "text-gray-300 hover:text-white block px-3 py-2 text-base font-medium" do %>
+              Projects
+            <% end %>
+            <a href="#" class="text-gray-300 hover:text-white block px-3 py-2 text-base font-medium">Dashboard</a>
+            <a href="#" class="text-gray-300 hover:text-white block px-3 py-2 text-base font-medium">Settings</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="flex flex-1 flex-col overflow-hidden">
+        <!-- Top bar -->
+        <div class="bg-white shadow-sm border-b border-gray-200 px-4 py-3 md:px-6">
+          <h1 class="text-lg font-semibold text-gray-900">
+            <%= content_for(:page_title) || "Dashboard" %>
+          </h1>
+        </div>
+        
+        <!-- Flash messages -->
+        <% flash.each do |key, value| %>
+          <div class="mx-4 mt-4 md:mx-6">
+            <% if key == 'notice' %>
+              <div class="p-4 border rounded-md bg-green-50 border-green-200 text-green-800">
+                <%= value %>
+              </div>
+            <% else %>
+              <div class="p-4 border rounded-md bg-blue-50 border-blue-200 text-blue-800">
+                <%= value %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        
+        <!-- Page content -->
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-4 py-6 md:px-6">
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        menu.classList.toggle('hidden');
+      }
+    </script>
+  </body>
 </html>

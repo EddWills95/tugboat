@@ -1,12 +1,18 @@
-<% content_for :title, "Editing project" %>
+<% content_for :page_title, "Edit #{@project.name}" %>
 
-<h1>Editing project</h1>
+<div class="max-w-2xl">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-900">Edit Project</h2>
+    <p class="mt-1 text-sm text-gray-600">Update your project configuration</p>
+  </div>
 
-<%= render "form", project: @project %>
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <%= render "form", project: @project %>
+  </div>
 
-<br>
-
-<div>
-  <%= link_to "Show this project", @project %> |
-  <%= link_to "Back to projects", projects_path %>
+  <div class="mt-6 flex space-x-4">
+    <%= link_to "View Project", @project, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+    <span class="text-gray-300">|</span>
+    <%= link_to "Back to Projects", projects_path, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+  </div>
 </div>

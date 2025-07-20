@@ -1,16 +1,32 @@
-<p style="color: green"><%= notice %></p>
+<% content_for :page_title, "Projects" %>
 
-<% content_for :title, "Projects" %>
+<div class="mb-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-900">Your Projects</h2>
+    <%= link_to "New project", new_project_path, class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+  </div>
+</div>
 
-<h1>Projects</h1>
-
-<div id="projects">
+<div id="projects" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
   <% @projects.each do |project| %>
-    <%= render project %>
-    <p>
-      <%= link_to "Show this project", project %>
-    </p>
+    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+      <%= render project %>
+      <div class="mt-4">
+        <%= link_to "View Details", project, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+      </div>
+    </div>
   <% end %>
 </div>
 
-<%= link_to "New project", new_project_path %>
+<% if @projects.empty? %>
+  <div class="text-center py-12">
+    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">No projects</h3>
+    <p class="mt-1 text-sm text-gray-500">Get started by creating a new project.</p>
+    <div class="mt-6">
+      <%= link_to "New Project", new_project_path, class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+    </div>
+  </div>
+<% end %>
