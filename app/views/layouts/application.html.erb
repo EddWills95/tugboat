@@ -24,4 +24,10 @@
   <body>
     <%= yield %>
   </body>
+
+  <% flash.each do |key, value| %>
+  <div class="p-4 my-2 border rounded bg-blue-100 text-blue-800">
+    <%= value %>
+  </div>
+<% end %>
 </html>
