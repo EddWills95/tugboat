@@ -46,7 +46,13 @@ class ProjectsController < ApplicationController
   def update
     respond_to do |format|
       if @project.update(project_params)
-        format.html { redirect_to @project, notice: "Project was successfully updated." }
+        # Automatically redeploy the container if it was previously deployed
+        if should_redeploy?
+          redeploy_container
+          format.html { redirect_to @project, notice: "Project was successfully updated and redeployed!" }
+        else
+          format.html { redirect_to @project, notice: "Project was successfully updated." }
+        end
         format.json { render :show, status: :ok, location: @project }
       else
         format.html { render :edit, status: :unprocessable_entity }
@@ -139,5 +145,30 @@ class ProjectsController < ApplicationController
       container_name = "tugboat-#{@project.id}"
       success = system("docker rm -f #{container_name} > /dev/null 2>&1")
       redirect_to @projects, notice: if !success then "Failed to start project." end
+    end
+
+    def should_redeploy?
+      # Only redeploy if the container exists (has been deployed before)
+      # and the project has deployment-affecting changes
+      return false if @project.status == "not_deployed"
+
+      # Check if the container exists
+      container_exists = system("docker inspect #{@project.container_name} > /dev/null 2>&1")
+      container_exists
+    end
+
+    def redeploy_container
+      container_name = @project.container_name
+      port_mapping = @project.port_mapping
+      image = @project.docker_image
+
+      # Stop and remove existing container
+      system("docker rm -f #{container_name} > /dev/null 2>&1")
+
+      # Run the new container with updated configuration
+      success = system("docker run -d --name #{container_name} -p #{port_mapping} #{image}")
+
+      @project.update(status: success ? "running" : "error")
+      success
     end
 end
