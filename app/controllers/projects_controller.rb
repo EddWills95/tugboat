@@ -8,6 +8,14 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1 or /projects/1.json
   def show
+    @project = Project.find(params[:id])
+    @status = container_status(@project.container_name)
+
+    if @status == :running
+      @logs = `docker logs --tail 100 #{Shellwords.escape(@project.container_name)} 2>&1`
+    else
+      @logs = "Logs unavailable. Container is not running."
+    end
   end
 
   # GET /projects/new
@@ -49,6 +57,10 @@ class ProjectsController < ApplicationController
 
   # DELETE /projects/1 or /projects/1.json
   def destroy
+    if container_status(@project.container_name) == :running
+      @project.stop
+    end
+
     @project.destroy!
 
     respond_to do |format|
@@ -59,7 +71,7 @@ class ProjectsController < ApplicationController
 
   def deploy
     @project = Project.find(params[:id])
-    container_name = "tugboat-#{@project.id}"
+    container_name = @project.container_name
     port = @project.port
     image = @project.docker_image
 
@@ -76,29 +88,46 @@ class ProjectsController < ApplicationController
 
   def start
     @project = Project.find(params[:id])
-    container_name = "tugboat-#{@project.id}"
-    success = system("docker start #{container_name} > /dev/null 2>&1")
-    @project.update(status: success ? "running" : "error")
-    redirect_to @project, notice: if !success then "Failed to start project." end
+    success = @project.start
+    redirect_to @project, notice: success ? "Project started successfully!" : "Failed to start project."
   end
 
   def stop
     @project = Project.find(params[:id])
-    container_name = "tugboat-#{@project.id}"
-    success = system("docker stop #{container_name} > /dev/null 2>&1")
-    @project.update(status: success ? "stopped" : "error")
-    redirect_to @project, notice: if !success then "Failed to start project." end
+    success = @project.stop
+    redirect_to @project, notice: success ? "Project stopped successfully!" : "Failed to stop project."
+  end
+
+  def logs
+    @project = Project.find(params[:id])
+    container_name = @project.container_name
+
+    @logs = `docker logs --tail 100 #{container_name} 2>&1`
+  rescue => e
+    @logs = "Failed to fetch logs: #{e.message}"
+  end
+
+  def container_status(container_name)
+    info = `docker ps -a --filter "name=#{container_name}" --format "{{.Status}}"`.strip
+
+    return :not_found if info.empty?
+    return :running if info.start_with?("Up")
+    :stopped
   end
 
 
   private
-    # Use callbacks to share common setup or constraints between actions.
     def set_project
-      @project = Project.find(params.expect(:id))
+      @project = Project.find(params[:id])
     end
 
-    # Only allow a list of trusted parameters through.
     def project_params
-      params.expect(project: [ :name, :docker_image, :port, :status ])
+      params.require(:project).permit(:name, :docker_image, :port, :status)
+    end
+
+    def delete_docker_container
+      container_name = "tugboat-#{@project.id}"
+      success = system("docker rm -f #{container_name} > /dev/null 2>&1")
+      redirect_to @projects, notice: if !success then "Failed to start project." end
     end
 end

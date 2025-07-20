@@ -3,6 +3,7 @@ Rails.application.routes.draw do
     post :deploy, on: :member
     post :start, on: :member
     post :stop, on: :member
+    get :logs, on: :member
   end
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
