@@ -45,7 +45,7 @@
                 Dashboard
               </a>
 
-              <%= link_to projects_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md #{'bg-gray-900 text-white' if current_page?(projects_path)}" do %>
+              <%= link_to projects_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md #{'bg-gray-900 text-white' if controller_name == 'projects'}" do %>
                 <svg class="text-gray-400 mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                 </svg>
@@ -102,7 +102,7 @@
                     <div class="flex items-center space-x-2 text-xs">
                       <%= link_to "Settings", edit_user_settings_path, class: "text-gray-300 hover:text-white" %>
                       <span class="text-gray-500">•</span>
-                      <%= link_to "Sign out", destroy_user_session_path, method: :delete, class: "text-gray-300 hover:text-white" %>
+                      <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "text-gray-300 hover:text-white bg-transparent border-none p-0 text-xs cursor-pointer" %>
                     </div>
                   </div>
                 </div>
@@ -131,7 +131,7 @@
         <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden bg-gray-800">
           <div class="px-2 pt-2 pb-3 space-y-1">
-            <%= link_to projects_path, class: "text-gray-300 hover:text-white block px-3 py-2 text-base font-medium" do %>
+            <%= link_to projects_path, class: "text-gray-300 hover:text-white block px-3 py-2 text-base font-medium #{'bg-gray-900 text-white' if controller_name == 'projects'}" do %>
               Projects
             <% end %>
             
