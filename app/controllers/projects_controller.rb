@@ -72,14 +72,14 @@ class ProjectsController < ApplicationController
   def deploy
     @project = Project.find(params[:id])
     container_name = @project.container_name
-    port = @project.port
+    port_mapping = @project.port_mapping
     image = @project.docker_image
 
     # Stop and remove any existing container
     system("docker rm -f #{container_name} > /dev/null 2>&1")
 
-    # Run the new container
-    success = system("docker run -d --name #{container_name} -p #{port}:80 #{image}")
+    # Run the new container with proper port mapping
+    success = system("docker run -d --name #{container_name} -p #{port_mapping} #{image}")
 
     @project.update(status: success ? "running" : "error")
 
@@ -132,7 +132,7 @@ class ProjectsController < ApplicationController
     end
 
     def project_params
-      params.require(:project).permit(:name, :docker_image, :port, :status)
+      params.require(:project).permit(:name, :docker_image, :port, :internal_port, :external_port, :status)
     end
 
     def delete_docker_container

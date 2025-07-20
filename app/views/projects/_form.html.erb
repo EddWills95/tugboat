@@ -34,9 +34,24 @@
       <%= form.text_field :docker_image, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "e.g., nginx:latest" %>
     </div>
 
-    <div>
-      <%= form.label :port, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= form.number_field :port, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "8080" %>
+    <!-- Port Mapping Section -->
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h4 class="text-sm font-medium text-gray-900 mb-3">Port Mapping</h4>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <%= form.label :external_port, "External Port (Host)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= form.number_field :external_port, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "8080" %>
+          <p class="mt-1 text-xs text-gray-500">Port accessible from outside the container</p>
+        </div>
+        <div>
+          <%= form.label :internal_port, "Internal Port (Container)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= form.number_field :internal_port, class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "80" %>
+          <p class="mt-1 text-xs text-gray-500">Port the application listens on inside the container</p>
+        </div>
+      </div>
+      <div class="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-700">
+        <strong>Example:</strong> External port 8080 → Internal port 80 maps host:8080 to container:80
+      </div>
     </div>
 
     <div class="flex justify-end">

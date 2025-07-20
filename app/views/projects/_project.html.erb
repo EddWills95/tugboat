@@ -1,22 +1,31 @@
-<div id="<%= dom_id project %>">
-  <p>
-    <strong>Name:</strong>
-    <%= project.name %>
-  </p>
-
-  <p>
-    <strong>Docker image:</strong>
-    <%= project.docker_image %>
-  </p>
-
-  <p>
-    <strong>Port:</strong>
-    <%= project.port %>
-  </p>
-
-  <p>
-    <strong>Status:</strong>
-    <%= project.status %>
-  </p>
-
+<div id="<%= dom_id project %>" class="h-full">
+  <h3 class="text-lg font-semibold text-gray-900 mb-3"><%= project.name %></h3>
+  
+  <div class="space-y-2 text-sm">
+    <div>
+      <span class="font-medium text-gray-600">Docker Image:</span>
+      <span class="text-gray-900"><%= project.docker_image %></span>
+    </div>
+    
+    <div>
+      <span class="font-medium text-gray-600">Port Mapping:</span>
+      <span class="text-gray-900"><%= project.external_port %>:<%= project.internal_port %></span>
+    </div>
+    
+    <div>
+      <span class="font-medium text-gray-600">Status:</span>
+      <% case project.status %>
+      <% when 'running' %>
+        <span class="text-green-600 font-medium">● Running</span>
+      <% when 'stopped' %>
+        <span class="text-red-600 font-medium">● Stopped</span>
+      <% when 'not_deployed' %>
+        <span class="text-gray-600 font-medium">● Not Deployed</span>
+      <% when nil %>
+        <span class="text-gray-600 font-medium">● Unknown</span>
+      <% else %>
+        <span class="text-gray-600 font-medium">● <%= project.status.capitalize %></span>
+      <% end %>
+    </div>
+  </div>
 </div>
