@@ -1,0 +1,29 @@
+<p style="color: green"><%= notice %></p>
+
+<%= render @project %>
+
+<div>
+  <%= link_to "Edit this project", edit_project_path(@project) %> |
+  <%= link_to "Back to projects", projects_path %>  
+
+
+  
+  <% if @project.is_running %>
+    <%= button_to "Stop Project", stop_project_path(@project),
+                method: :post,
+                data: { turbo: false },
+                class: "bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" %>
+  <% else %>
+  <%= button_to "Deploy Project", deploy_project_path(@project),
+              method: :post,
+              data: { turbo: false },
+              class: "bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" %>
+    <%= button_to "Start Project", start_project_path(@project),
+                method: :post,
+                data: { turbo: false },
+                class: "bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mr-2" %>
+  <% end %>
+
+
+  <%= button_to "Destroy this project", @project, method: :delete %>
+</div>
