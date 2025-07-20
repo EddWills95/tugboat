@@ -115,6 +115,16 @@ class ProjectsController < ApplicationController
     :stopped
   end
 
+  def refresh_logs
+    @project = Project.find(params[:id])
+    @logs = if @project.live_status == "running"
+              `docker logs --tail 100 #{Shellwords.escape(@project.container_name)} 2>&1`
+    else
+              "Logs unavailable. Container is not running."
+    end
+    render partial: "logs", locals: { logs: @logs }
+  end
+
 
   private
     def set_project

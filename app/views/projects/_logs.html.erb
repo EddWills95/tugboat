@@ -1,0 +1,10 @@
+<div class="bg-black text-green-400 p-4 rounded overflow-y-auto text-sm h-96" style="white-space: pre-wrap;" id="logs-container">
+  <%= logs %>
+</div>
+
+<script>
+  document.addEventListener('turbo:frame-load', function() {
+    const logsContainer = document.getElementById('logs-container');
+    logsContainer.scrollTop = logsContainer.scrollHeight;
+  });
+</script>

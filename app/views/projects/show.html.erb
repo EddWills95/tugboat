@@ -23,8 +23,10 @@
   <% end %>
 
 <h2 class="mt-6 font-bold">Container Logs:</h2>
-<div class="bg-black text-green-400 p-4 rounded overflow-y-auto text-sm h-96" style="white-space: pre-wrap;" id="logs-container">
-  <%= @logs %>
+<div id="logs-container">
+  <%= turbo_frame_tag "project_logs" do %>
+    <%= render partial: "logs", locals: { logs: @logs } %>
+  <% end %>
 </div>
 
 
@@ -33,9 +35,13 @@
   
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const logsContainer = document.getElementById('logs-container');
-    logsContainer.scrollTop = logsContainer.scrollHeight;
+  document.addEventListener("DOMContentLoaded", function () {
+    setInterval(() => {
+      const frame = document.querySelector("turbo-frame#project_logs");
+      if (frame) {
+        frame.src = "<%= refresh_logs_project_path(@project) %>";
+      }
+    }, 3000); // every 3 seconds
   });
 </script>
 </div>
