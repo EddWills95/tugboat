@@ -97,9 +97,13 @@
                   <div class="h-9 w-9 rounded-full bg-gray-500 flex items-center justify-center">
                     <span class="text-sm font-medium text-white"><%= current_user.email.first.upcase %></span>
                   </div>
-                  <div class="ml-3">
+                  <div class="ml-3 flex-grow">
                     <p class="text-sm font-medium text-white truncate"><%= current_user.email %></p>
-                    <%= link_to "Sign out", destroy_user_session_path, method: :delete, class: "text-xs text-gray-300 hover:text-white" %>
+                    <div class="flex items-center space-x-2 text-xs">
+                      <%= link_to "Settings", edit_user_settings_path, class: "text-gray-300 hover:text-white" %>
+                      <span class="text-gray-500">•</span>
+                      <%= link_to "Sign out", destroy_user_session_path, method: :delete, class: "text-gray-300 hover:text-white" %>
+                    </div>
                   </div>
                 </div>
               </div>

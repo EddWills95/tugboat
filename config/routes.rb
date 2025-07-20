@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # User Settings routes
+  get "user_settings/edit", to: "user_settings#edit", as: :edit_user_settings
+  patch "user_settings", to: "user_settings#update", as: :user_settings
+
   # DDNS Settings routes
   get "ddns_settings", to: "ddns_settings#index"
   patch "ddns_settings", to: "ddns_settings#update"
