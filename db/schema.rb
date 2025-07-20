@@ -10,9 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_20_211728) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_20_221429) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "ddns_settings", primary_key: "primary_key", id: :string, default: "singleton", force: :cascade do |t|
+    t.boolean "enabled", default: false
+    t.string "base_domain"
+    t.string "aws_access_key_id"
+    t.string "aws_secret_access_key"
+    t.string "aws_region", default: "us-east-1"
+    t.string "route53_hosted_zone_id"
+    t.integer "update_interval", default: 300
+    t.datetime "last_update", precision: nil
+    t.string "current_ip"
+    t.string "last_error"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "projects", force: :cascade do |t|
     t.string "name"
@@ -23,6 +38,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_20_211728) do
     t.datetime "updated_at", null: false
     t.integer "internal_port"
     t.integer "external_port"
+    t.string "subdomain"
+    t.string "custom_domain"
+    t.boolean "ssl_enabled", default: true
+    t.string "domain"
+    t.boolean "ddns_enabled", default: false
+    t.string "ddns_provider"
+    t.json "ddns_config", default: {}
+    t.index ["subdomain"], name: "index_projects_on_subdomain", unique: true
   end
 
   create_table "users", force: :cascade do |t|

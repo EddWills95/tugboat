@@ -1,0 +1,33 @@
+{
+  "settings": [
+    {
+      "provider": "route53",
+      "domain": "example.com",
+      "host": "*",
+      "aws_access_key_id": "YOUR_ACCESS_KEY",
+      "aws_secret_access_key": "YOUR_SECRET_KEY",
+      "aws_region": "us-east-1",
+      "zone_id": "YOUR_ZONE_ID"
+    }
+  ],
+  "backup": {
+    "period": "24h",
+    "directory": "/updater/data"
+  },
+  "db": {
+    "type": "json",
+    "file": "/updater/data/db.json"
+  },
+  "web": {
+    "enabled": true,
+    "listening_port": 8000,
+    "root_url": "/",
+    "log_level": "info"
+  },
+  "health": {
+    "server": {
+      "enabled": true,
+      "listening_port": 9999
+    }
+  }
+}

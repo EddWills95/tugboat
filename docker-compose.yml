@@ -12,5 +12,24 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  ddns-updater:
+    image: qmcgaw/ddns-updater
+    container_name: tugboat-ddns
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/ddns:/updater/data
+    environment:
+      - PERIOD=5m
+      - SERVER_ENABLED=yes
+      - LOG_LEVEL=info
+      - LISTENING_ADDRESS=:8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   pgdata:
