@@ -11,9 +11,6 @@
   <% @projects.each do |project| %>
     <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
       <%= render project %>
-      <div class="mt-4">
-        <%= link_to "View Details", project, class: "text-blue-600 hover:text-blue-800 font-medium" %>
-      </div>
     </div>
   <% end %>
 </div>
