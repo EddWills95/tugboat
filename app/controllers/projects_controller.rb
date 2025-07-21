@@ -8,8 +8,10 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1 or /projects/1.json
   def show
+    @needs_deploy = !DockerService.container_exists?(@project.container_name)
     @status = DockerService.container_status(@project.container_name)
-    puts "STATUS #{@status}"
+
+    Rails.logger.info "Container status for #{@project.container_name}: #{@status}"
     if @status == "running"
       @logs = DockerService.container_logs(@project.container_name)
     else
@@ -76,10 +78,11 @@ class ProjectsController < ApplicationController
 
   def deploy
     container_name = @project.container_name
-    port_mapping = @project.port_mapping
+    internal_port = @project.internal_port
+    external_port = @project.external_port
     image = @project.docker_image
-    DockerService.remove_container(container_name)
-    success = DockerService.run_container(container_name, port_mapping, image)
+
+    success = DockerService.deploy_container(container_name, image, internal_port, external_port)
     @project.update(status: success ? "running" : "error")
     redirect_to @project, notice: success ? "Deployment started!" : "Deployment failed!"
   end

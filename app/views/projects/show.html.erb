@@ -63,14 +63,16 @@
   <div class="bg-white rounded-lg shadow-md p-6">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Project Actions</h3>
     <div class="flex flex-wrap gap-3">
-      <% case @status %>
-      <% when "not_found" %>
+      <% if @needs_deploy %>      
         <%= button_to deploy_project_path(@project), method: :post, data: { turbo: false }, class: "bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
           </svg>
           Deploy Project
         <% end %>
+      <% end %>
+      <% case @status %>
+      <% when "not_found", "not_deployed" %>
       <% when "stopped", "exited" %>
         <%= button_to start_project_path(@project), method: :post, data: { turbo: false }, class: "bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,21 +102,23 @@
   <!-- Container Logs -->
   <div class="bg-white rounded-lg shadow-md p-6">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Container Logs</h3>
-    <div id="logs-container">
-      <%= turbo_frame_tag "project_logs" do %>
-        <%= render partial: "logs", locals: { logs: @logs } %>
-      <% end %>
-    </div>
+    <div id="logs-container" />
   </div>
 </div>
 
-<script>
+<script type="module">
+  import { subscribeToLogs } from "/javascript/channels/logs_channel.js";
+
   document.addEventListener("DOMContentLoaded", function () {
-    setInterval(() => {
-      const frame = document.querySelector("turbo-frame#project_logs");
-      if (frame) {
-        frame.src = "<%= refresh_logs_project_path(@project) %>";
-      }
-    }, 3000); // every 3 seconds
+    const logsContainer = document.getElementById("logs-container");
+    if (logsContainer) {
+      const containerName = logsContainer.dataset.containerName;
+      subscribeToLogs(containerName, function (logLine) {
+        const line = document.createElement("div");
+        line.textContent = logLine;
+        logsContainer.appendChild(line);
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+      });
+    }
   });
 </script>
