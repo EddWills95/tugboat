@@ -12,16 +12,24 @@ class DockerService
   def self.container_status(name)
     container = get_container(name)
     if container.nil?
-      return nil
+      return "not_found"
     end
 
     container.info["State"]["Status"]
+  rescue => e
+    Rails.logger.error "Error getting container status for #{name}: #{e.message}"
+    "error"
   end
 
   def self.start_container(name)
     container = get_container(name)
+    return false unless container
+
     container.start
     true
+  rescue => e
+    Rails.logger.error "Error starting container #{name}: #{e.message}"
+    false
   end
 
   def self.restart_container(name)
@@ -31,6 +39,11 @@ class DockerService
   end
 
   def self.deploy_container(name, image, internal_port, external_port)
+    # Remove existing container if it exists
+    if container_exists?(name)
+      remove_container(name)
+    end
+
     options = {
       "name" => name,
       "Image" => image,
@@ -55,12 +68,21 @@ class DockerService
 
     container = Docker::Container.create(options)
     container.start
+    true
+  rescue => e
+    Rails.logger.error "Error deploying container #{name}: #{e.message}"
+    false
   end
 
   def self.stop_container(name)
     container = get_container(name)
+    return false unless container
+
     container.stop
     true
+  rescue => e
+    Rails.logger.error "Error stopping container #{name}: #{e.message}"
+    false
   end
 
   def self.container_logs(name, tail: 100)

@@ -11,6 +11,11 @@ class ProjectsController < ApplicationController
     @needs_deploy = !DockerService.container_exists?(@project.container_name)
     @status = DockerService.container_status(@project.container_name)
 
+    # Sync database status with actual Docker status
+    if @status != @project.status && @status.present?
+      @project.update_column(:status, @status)
+    end
+
     @project_url = "http://#{@project.subdomain}.localhost"
 
     # @ddns_base_domain = DdnsSettings.instance_values["base_domain"]
@@ -77,17 +82,31 @@ class ProjectsController < ApplicationController
     image = @project.docker_image
 
     success = DockerService.deploy_container(container_name, image, internal_port, external_port)
-    @project.update(status: success ? "running" : "error")
+    if success
+      # Get the actual status after deployment
+      new_status = DockerService.container_status(container_name)
+      @project.update(status: new_status || "error")
+    else
+      @project.update(status: "error")
+    end
     redirect_to @project, notice: success ? "Deployment started!" : "Deployment failed!"
   end
 
   def start
     success = DockerService.start_container(@project.container_name)
+    if success
+      new_status = DockerService.container_status(@project.container_name)
+      @project.update(status: new_status) if new_status
+    end
     redirect_to @project, notice: success ? "Project started successfully!" : "Failed to start project."
   end
 
   def stop
     success = DockerService.stop_container(@project.container_name)
+    if success
+      new_status = DockerService.container_status(@project.container_name)
+      @project.update(status: new_status) if new_status
+    end
     redirect_to @project, notice: success ? "Project stopped successfully!" : "Failed to stop project."
   end
 

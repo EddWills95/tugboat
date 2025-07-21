@@ -2,3 +2,15 @@ http://edd.localhost {
   reverse_proxy tugboat-eddwilliams-11:80
 }
     
+
+
+http://edd.localhost {
+  reverse_proxy tugboat-eddwilliams-11:80
+}
+    
+
+
+http://edd.localhost {
+  reverse_proxy tugboat-eddwilliams-11:80
+}
+    
