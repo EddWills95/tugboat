@@ -1,5 +1,5 @@
 class ProjectsController < ApplicationController
-  before_action :set_project, only: %i[ show edit update destroy ]
+  before_action :set_project, only: %i[ show edit update destroy deploy start stop logs refresh_logs ]
 
   # GET /projects or /projects.json
   def index
@@ -8,11 +8,9 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1 or /projects/1.json
   def show
-    @project = Project.find(params[:id])
-    @status = container_status(@project.container_name)
-
-    if @status == :running
-      @logs = `docker logs --tail 100 #{Shellwords.escape(@project.container_name)} 2>&1`
+    @status = DockerService.container_status(@project.container_name)
+    if @status == "running"
+      @logs = DockerService.container_logs(@project.container_name)
     else
       @logs = "Logs unavailable. Container is not running."
     end
@@ -76,55 +74,38 @@ class ProjectsController < ApplicationController
   end
 
   def deploy
-    @project = Project.find(params[:id])
     container_name = @project.container_name
     port_mapping = @project.port_mapping
     image = @project.docker_image
-
-    # Stop and remove any existing container
-    system("docker rm -f #{container_name} > /dev/null 2>&1")
-
-    # Run the new container with proper port mapping
-    success = system("docker run -d --name #{container_name} -p #{port_mapping} #{image}")
-
+    DockerService.remove_container(container_name)
+    success = DockerService.run_container(container_name, port_mapping, image)
     @project.update(status: success ? "running" : "error")
-
     redirect_to @project, notice: success ? "Deployment started!" : "Deployment failed!"
   end
 
   def start
-    @project = Project.find(params[:id])
-    success = @project.start
+    success = DockerService.start_container(@project.container_name)
     redirect_to @project, notice: success ? "Project started successfully!" : "Failed to start project."
   end
 
   def stop
-    @project = Project.find(params[:id])
-    success = @project.stop
+    success = DockerService.stop_container(@project.container_name)
     redirect_to @project, notice: success ? "Project stopped successfully!" : "Failed to stop project."
   end
 
   def logs
-    @project = Project.find(params[:id])
-    container_name = @project.container_name
-
-    @logs = `docker logs --tail 100 #{container_name} 2>&1`
+    @logs = DockerService.container_logs(@project.container_name)
   rescue => e
     @logs = "Failed to fetch logs: #{e.message}"
   end
 
   def container_status(container_name)
-    info = `docker ps -a --filter "name=#{container_name}" --format "{{.Status}}"`.strip
-
-    return :not_found if info.empty?
-    return :running if info.start_with?("Up")
-    :stopped
+    DockerService.container_status(container_name)
   end
 
   def refresh_logs
-    @project = Project.find(params[:id])
     @logs = if @project.live_status == "running"
-              `docker logs --tail 100 #{Shellwords.escape(@project.container_name)} 2>&1`
+              DockerService.container_logs(@project.container_name)
     else
               "Logs unavailable. Container is not running."
     end
@@ -142,32 +123,21 @@ class ProjectsController < ApplicationController
     end
 
     def delete_docker_container
-      container_name = "tugboat-#{@project.id}"
-      success = system("docker rm -f #{container_name} > /dev/null 2>&1")
-      redirect_to @projects, notice: if !success then "Failed to start project." end
+      success = DockerService.remove_container(@project.container_name)
+      redirect_to @projects, notice: (!success ? "Failed to start project." : nil)
     end
 
     def should_redeploy?
-      # Only redeploy if the container exists (has been deployed before)
-      # and the project has deployment-affecting changes
       return false if @project.status == "not_deployed"
-
-      # Check if the container exists
-      container_exists = system("docker inspect #{@project.container_name} > /dev/null 2>&1")
-      container_exists
+      DockerService.container_exists?(@project.container_name)
     end
 
     def redeploy_container
       container_name = @project.container_name
       port_mapping = @project.port_mapping
       image = @project.docker_image
-
-      # Stop and remove existing container
-      system("docker rm -f #{container_name} > /dev/null 2>&1")
-
-      # Run the new container with updated configuration
-      success = system("docker run -d --name #{container_name} -p #{port_mapping} #{image}")
-
+      DockerService.remove_container(container_name)
+      success = DockerService.run_container(container_name, port_mapping, image)
       @project.update(status: success ? "running" : "error")
       success
     end
