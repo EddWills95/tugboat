@@ -9,6 +9,7 @@ class Project < ApplicationRecord
   validates :custom_domain, format: { with: /\A[a-z0-9\-\.]+\z/i }, allow_blank: true
 
   # Callbacks
+  before_save :update_caddy, if: :will_save_change_to_subdomain?
   after_save :regenerate_caddy_config, if: :subdomain_changed?
   after_destroy :regenerate_caddy_config
 
@@ -60,19 +61,24 @@ class Project < ApplicationRecord
     "#{protocol}://#{full_domain}"
   end
 
-  private
+  def update_caddy
+    if @project.subdomain.present?
+      if CaddyService.find_configuration_for_domain(@project.full_domain)
+        CaddyService.delete_config_block_for_domain(@project.full_domain)
+      end
+      local_project_url = "localhost:#{@project.external_port}"
+      CaddyService.add_new_config_block(@project.full_domain, local_project_url)
+    else
+      Rails.logger.info "No subdomain set for project #{@project.name}, skipping Caddy configuration."
+    end
+  end
 
+  private
   def set_default_status
     self.status ||= "not_deployed"
   end
 
   def ddns_settings
     @ddns_settings ||= DdnsSettings.instance
-  end
-
-  def regenerate_caddy_config
-    # TODO: Implement Caddy config regeneration
-    # CaddyConfigService.regenerate_config
-    Rails.logger.info "Project #{name} domain configuration changed - Caddy config should be regenerated"
   end
 end

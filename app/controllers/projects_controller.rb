@@ -97,6 +97,8 @@ class ProjectsController < ApplicationController
     DockerService.container_status(container_name)
   end
 
+
+
   private
     def set_project
       @project = Project.find(params[:id])

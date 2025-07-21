@@ -1,16 +1,24 @@
 
 class BaseService
-  DOCKER_NAME = "tugboat-caddy"
+  def self.service_name
+    "base"
+  end
+
+  def self.docker_name
+    "tugboat-#{service_name}"
+  end
 
   def self.start
-    DockerService.start_container(DOCKER_NAME)
+    DockerService.start_container(docker_name)
   end
 
   def self.stop
-    DockerService.stop_container(DOCKER_NAME)
+    DockerService.stop_container(docker_name)
   end
 
   def self.status
-    DockerService.container_status("tugboat-caddy")
+    status = DockerService.container_status(docker_name)
+    puts status
+    status
   end
 end

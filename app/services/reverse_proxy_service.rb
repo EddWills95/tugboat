@@ -2,11 +2,15 @@ require "net/http"
 require "uri"
 require "json"
 
-class CaddyService < BaseService
-  CADDY_API_URL = ENV.fetch("CADDY_API_URL", "http://localhost:2019")
+class ReverseProxyService < BaseService
+  PROXY_API_URL = ENV.fetch("PROXY_API_URL", "http://localhost:2020")
+
+  def self.service_name
+    "reverse-proxy"
+  end
 
   def self.reload
-    uri = URI.parse("#{CADDY_API_URL}/load")
+    uri = URI.parse("#{PROXY_API_URL}/load")
     request = Net::HTTP::Post.new(uri)
     request.body = get_config
     request.content_type = "application/json"
@@ -16,11 +20,11 @@ class CaddyService < BaseService
   end
 
   def self.start
-    DockerService.start_container("tugboat-caddy")
+    DockerService.start_container(docker_name)
   end
 
   def self.stop
-    DockerService.stop_container("tugboat-caddy")
+    DockerService.stop_container(docker_name)
   end
 
   def self.get_config
@@ -36,7 +40,7 @@ class CaddyService < BaseService
     )
 
     # Add this to the Caddyfile
-    CaddyService.append_to_config(new_config)
+    ReverseProxyService.append_to_config(new_config)
   end
 
   def self.append_to_config(new_config)

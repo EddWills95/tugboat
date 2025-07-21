@@ -31,9 +31,9 @@ services:
   #     timeout: 10s
   #     retries: 3
 
-  caddy:
+  reverse-proxy:
     image: caddy:2
-    container_name: tugboat-caddy
+    container_name: tugboat-reverse-proxy
     ports:
       - "80:80"
       - "2019:2019"
