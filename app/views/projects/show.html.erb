@@ -105,20 +105,3 @@
     <div id="logs-container" />
   </div>
 </div>
-
-<script type="module">
-  import { subscribeToLogs } from "/javascript/channels/logs_channel.js";
-
-  document.addEventListener("DOMContentLoaded", function () {
-    const logsContainer = document.getElementById("logs-container");
-    if (logsContainer) {
-      const containerName = logsContainer.dataset.containerName;
-      subscribeToLogs(containerName, function (logLine) {
-        const line = document.createElement("div");
-        line.textContent = logLine;
-        logsContainer.appendChild(line);
-        logsContainer.scrollTop = logsContainer.scrollHeight;
-      });
-    }
-  });
-</script>
