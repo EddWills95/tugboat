@@ -9,9 +9,7 @@ class Project < ApplicationRecord
   validates :custom_domain, format: { with: /\A[a-z0-9\-\.]+\z/i }, allow_blank: true
 
   # Callbacks
-  before_save :update_caddy, if: :will_save_change_to_subdomain?
-  after_save :regenerate_caddy_config, if: :subdomain_changed?
-  after_destroy :regenerate_caddy_config
+  after_save :update_reverse_proxy
 
   # Set default status after initialization
   after_initialize :set_default_status, if: :new_record?
@@ -61,13 +59,11 @@ class Project < ApplicationRecord
     "#{protocol}://#{full_domain}"
   end
 
-  def update_caddy
-    if @project.subdomain.present?
-      if CaddyService.find_configuration_for_domain(@project.full_domain)
-        CaddyService.delete_config_block_for_domain(@project.full_domain)
-      end
-      local_project_url = "localhost:#{@project.external_port}"
-      CaddyService.add_new_config_block(@project.full_domain, local_project_url)
+  def update_reverse_proxy
+    Rails.logger.info "Updating Caddy configuration for project: #{name}"
+    if self.subdomain.present?
+      local_project_url = "#{self.container_name}:#{self.internal_port}"
+      ReverseProxyService.add_new_config_block("http://#{self.subdomain}.localhost", local_project_url)
     else
       Rails.logger.info "No subdomain set for project #{@project.name}, skipping Caddy configuration."
     end

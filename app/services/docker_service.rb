@@ -24,10 +24,17 @@ class DockerService
     true
   end
 
+  def self.restart_container(name)
+    container = get_container(name)
+    container.restart
+    true
+  end
+
   def self.deploy_container(name, image, internal_port, external_port)
     options = {
       "name" => name,
-      "Image" => image
+      "Image" => image,
+      "NetworkMode" => "tugboat-network"
     }
 
     if internal_port && external_port
@@ -41,7 +48,8 @@ class DockerService
               "HostPort" => external_port.to_s
             }
           ]
-        }
+        },
+        "NetworkMode" => "tugboat-network"
       }
     end
 

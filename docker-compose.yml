@@ -11,6 +11,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - db-network
 
   # ddns-updater:
   #   image: qmcgaw/ddns-updater
@@ -38,12 +40,18 @@ services:
       - "80:80"
       - "2019:2019"
     volumes:
-      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
-      - caddy_config:/config
+      - ./data/proxy:/config
     restart: unless-stopped
+    networks:
+      - tugboat-network
+
+networks:
+  db-network:
+    driver: bridge
+  tugboat-network:
+    external: true
 
 volumes:
   pgdata:
   caddy_data:
-  caddy_config:

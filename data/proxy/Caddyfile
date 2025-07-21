@@ -1,2 +1,3 @@
-:80
-respond "Hello, Caddy!"
+http://edd.localhost {
+	reverse_proxy tugboat-eddwilliams-11:80
+}

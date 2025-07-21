@@ -17,8 +17,6 @@ class BaseService
   end
 
   def self.status
-    status = DockerService.container_status(docker_name)
-    puts status
-    status
+    DockerService.container_status(docker_name)
   end
 end

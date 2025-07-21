@@ -8,8 +8,6 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1 or /projects/1.json
   def show
-    puts @project.inspect
-
     @needs_deploy = !DockerService.container_exists?(@project.container_name)
     @status = DockerService.container_status(@project.container_name)
 
