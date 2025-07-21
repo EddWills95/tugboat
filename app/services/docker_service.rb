@@ -13,7 +13,7 @@ class DockerService
   def self.container_status(name)
     name = sanitise_name(name)
     container = Docker::Container.get(name)
-    container.info["State"]
+    container.info["State"]["Status"]
   rescue Docker::Error::NotFoundError
     "not_found"
   end

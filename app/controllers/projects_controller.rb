@@ -9,6 +9,7 @@ class ProjectsController < ApplicationController
   # GET /projects/1 or /projects/1.json
   def show
     @status = DockerService.container_status(@project.container_name)
+    puts "STATUS #{@status}"
     if @status == "running"
       @logs = DockerService.container_logs(@project.container_name)
     else

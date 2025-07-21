@@ -64,21 +64,21 @@
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Project Actions</h3>
     <div class="flex flex-wrap gap-3">
       <% case @status %>
-      <% when :not_found %>
+      <% when "not_found" %>
         <%= button_to deploy_project_path(@project), method: :post, data: { turbo: false }, class: "bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
           </svg>
           Deploy Project
         <% end %>
-      <% when :stopped %>
+      <% when "stopped", "exited" %>
         <%= button_to start_project_path(@project), method: :post, data: { turbo: false }, class: "bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m6-10V7a3 3 0 00-3-3H6a3 3 0 00-3 3v1"/>
           </svg>
           Start Project
         <% end %>
-      <% when :running %>
+      <% when "running" %>
         <%= button_to stop_project_path(@project), method: :post, data: { turbo: false }, class: "bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
