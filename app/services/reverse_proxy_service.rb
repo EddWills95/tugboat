@@ -55,7 +55,7 @@ class ReverseProxyService < BaseService
     updated_config = "#{current_config}\n#{new_config}\n"
 
     File.write(Rails.root.join("data", "proxy", "Caddyfile"), updated_config)
-    
+
     # Automatically reload Caddy after updating the configuration
     reload
   end
