@@ -3,13 +3,7 @@ Rails.application.routes.draw do
   get "user_settings/edit", to: "user_settings#edit", as: :edit_user_settings
   patch "user_settings", to: "user_settings#update", as: :user_settings
 
-  # DDNS Settings routes
-  get "ddns_settings", to: "ddns_settings#index"
-  patch "ddns_settings", to: "ddns_settings#update"
-  post "ddns_settings/toggle_service", as: :toggle_service_ddns_settings
-  post "ddns_settings/start_service", as: :start_service_ddns_settings
-  post "ddns_settings/stop_service", as: :stop_service_ddns_settings
-  post "ddns_settings/restart_service", as: :restart_service_ddns_settings
+  # DDNS Settings feature is on hold
 
   resources :projects do
     member do
