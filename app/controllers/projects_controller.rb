@@ -1,5 +1,5 @@
 class ProjectsController < ApplicationController
-  before_action :set_project, only: %i[ show edit update destroy deploy start stop logs refresh_logs ]
+  before_action :set_project, only: %i[ show edit update destroy deploy start stop]
 
   # GET /projects or /projects.json
   def index
@@ -8,8 +8,14 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1 or /projects/1.json
   def show
+    puts @project.inspect
+
     @needs_deploy = !DockerService.container_exists?(@project.container_name)
     @status = DockerService.container_status(@project.container_name)
+
+    @project_url = "http://#{@project.subdomain}.localhost"
+
+    # @ddns_base_domain = DdnsSettings.instance_values["base_domain"]
 
     Rails.logger.info "Container status for #{@project.container_name}: #{@status}"
     if @status == "running"
@@ -45,20 +51,10 @@ class ProjectsController < ApplicationController
 
   # PATCH/PUT /projects/1 or /projects/1.json
   def update
-    respond_to do |format|
-      if @project.update(project_params)
-        # Automatically redeploy the container if it was previously deployed
-        if should_redeploy?
-          redeploy_container
-          format.html { redirect_to @project, notice: "Project was successfully updated and redeployed!" }
-        else
-          format.html { redirect_to @project, notice: "Project was successfully updated." }
-        end
-        format.json { render :show, status: :ok, location: @project }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @project.errors, status: :unprocessable_entity }
-      end
+    if @project.update(project_params)
+      redirect_to @project, notice: "Project was successfully updated."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -97,25 +93,9 @@ class ProjectsController < ApplicationController
     redirect_to @project, notice: success ? "Project stopped successfully!" : "Failed to stop project."
   end
 
-  def logs
-    @logs = DockerService.container_logs(@project.container_name)
-  rescue => e
-    @logs = "Failed to fetch logs: #{e.message}"
-  end
-
   def container_status(container_name)
     DockerService.container_status(container_name)
   end
-
-  def refresh_logs
-    @logs = if @project.live_status == "running"
-              DockerService.container_logs(@project.container_name)
-    else
-              "Logs unavailable. Container is not running."
-    end
-    render partial: "logs", locals: { logs: @logs }
-  end
-
 
   private
     def set_project
@@ -123,7 +103,7 @@ class ProjectsController < ApplicationController
     end
 
     def project_params
-      params.require(:project).permit(:name, :docker_image, :port, :internal_port, :external_port, :status)
+      params.require(:project).permit(:name, :docker_image, :port, :internal_port, :external_port, :status, :subdomain)
     end
 
     def delete_docker_container
@@ -134,15 +114,5 @@ class ProjectsController < ApplicationController
     def should_redeploy?
       return false if @project.status == "not_deployed"
       DockerService.container_exists?(@project.container_name)
-    end
-
-    def redeploy_container
-      container_name = @project.container_name
-      port_mapping = @project.port_mapping
-      image = @project.docker_image
-      DockerService.remove_container(container_name)
-      success = DockerService.run_container(container_name, port_mapping, image)
-      @project.update(status: success ? "running" : "error")
-      success
     end
 end

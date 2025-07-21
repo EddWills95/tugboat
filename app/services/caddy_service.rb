@@ -6,7 +6,7 @@ class CaddyService
   CADDY_API_URL = ENV.fetch("CADDY_API_URL", "http://localhost:2019")
 
   def self.status
-    DockerService.container_status("tugboat-caddy") == "running"
+    DockerService.container_status("tugboat-caddy")
   end
 
   def self.reload
