@@ -12,24 +12,38 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  ddns-updater:
-    image: qmcgaw/ddns-updater
-    container_name: tugboat-ddns
+  # ddns-updater:
+  #   image: qmcgaw/ddns-updater
+  #   container_name: tugboat-ddns
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./data/ddns:/updater/data
+  #   environment:
+  #     - PERIOD=5m
+  #     - SERVER_ENABLED=yes
+  #     - LOG_LEVEL=info
+  #     - LISTENING_ADDRESS=:8000
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+
+  caddy:
+    image: caddy:2
+    container_name: tugboat-caddy
     ports:
-      - "8000:8000"
+      - "80:80"
+      - "2019:2019"
     volumes:
-      - ./data/ddns:/updater/data
-    environment:
-      - PERIOD=5m
-      - SERVER_ENABLED=yes
-      - LOG_LEVEL=info
-      - LISTENING_ADDRESS=:8000
+      - ./data/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

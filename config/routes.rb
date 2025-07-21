@@ -27,4 +27,9 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "home#index"
+
+  get "reverse_proxy", to: "reverse_proxy#index"
+  post "reverse_proxy/reload", to: "reverse_proxy#reload", as: :reload_reverse_proxy
+  post "reverse_proxy/start", to: "reverse_proxy#start", as: :start_reverse_proxy
+  post "reverse_proxy/stop", to: "reverse_proxy#stop", as: :stop_reverse_proxy
 end
