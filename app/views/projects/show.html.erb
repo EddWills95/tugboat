@@ -102,13 +102,18 @@
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Proxy</h3>
     <div class="bg-gray-50 p-4 rounded">
       <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-2">Project URL</h4>
-      <% if @status == 'running' %>
-        <p class="text-lg font-semibold text-gray-900">
-          <%= link_to @project_url, @project_url, target: "_blank", class: "text-blue-600 hover:text-blue-800 underline" %>
-        </p>
-        <p class="text-xs text-gray-500 mt-1">Click to open in new tab</p>
+      <% if @project.has_reverse_proxy? %>
+        <% if @project.status == 'running' %>
+          <p class="text-lg font-semibold text-gray-900">
+            <%= link_to @project_url, @project_url, target: "_blank", class: "text-blue-600 hover:text-blue-800 underline" %>
+          </p>
+          <p class="text-xs text-gray-500 mt-1">Click to open in new tab</p>
+        <% else %>
+          <p class="text-lg font-semibold text-gray-500">Not available (project not running)</p>
+        <% end %>
       <% else %>
-        <p class="text-lg font-semibold text-gray-500">Not available (project not running)</p>
+        <p class="text-lg font-semibold text-gray-500">No subdomain set</p>
+        <p class="text-xs text-gray-500 mt-1">Set a subdomain to access this project via a URL</p>
       <% end %>
     </div>
   </div>

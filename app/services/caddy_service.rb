@@ -1,4 +1,3 @@
-
 require "net/http"
 require "uri"
 require "json"
@@ -17,7 +16,11 @@ class CaddyService < BaseService
   def start
     super
     wait_for_service_ready
-    load_config_from_file if File.exist?(CONFIG_PATH)
+    if File.exist?(CONFIG_PATH)
+      load_config_from_file
+    else
+      create_default_config
+    end
   rescue StandardError => e
     Rails.logger.error "CaddyService: Failed to start Caddy - #{e.message}"
     raise e
@@ -37,36 +40,63 @@ class CaddyService < BaseService
     "tugboat-#{service_name}"
   end
 
-  def add_proxy(hostname, upstream_url, route_id)
-    config = {
+  def has_proxy?(container_name)
+    response = get_config_by_id(container_name)
+    response[:code] == 200 && response[:json].present?
+  end
+
+  def add_proxy(hostname, upstream_url, container_name)
+    # Get current config from Caddy
+    response = get_config
+    config = response[:json] || {}
+
+    # Ensure the routes array exists
+    listen = config.dig("apps", "http", "servers", "default", "listen") || [ ":80" ]
+    routes = config.dig("apps", "http", "servers", "default", "routes") || []
+
+    # Remove any existing route with the same @id
+    routes.reject! { |r| r["@id"] == container_name }
+
+    # Add the new route
+    routes << {
+      "@id" => container_name,
+      "match" => [ { "host" => [ hostname ] } ],
+      "handle" => [
+        {
+          "handler" => "reverse_proxy",
+          "upstreams" => [ { "dial" => upstream_url } ]
+        }
+      ]
+    }
+
+    # Patch only the routes array to avoid overwriting other config
+    patch_body = {
       "apps" => {
         "http" => {
           "servers" => {
             "default" => {
-              "listen" => [ ":80" ],
-              "routes" => [
-                {
-                  "@id" => route_id,
-                  "match" => [
-                    { "host" => [ hostname ] }
-                  ],
-                  "handle" => [
-                    {
-                      "handler" => "reverse_proxy",
-                      "upstreams" => [
-                        { "dial" => upstream_url }
-                      ]
-                    }
-                  ]
-                }
-              ]
+              "listen" => listen,
+              "routes" => routes
             }
           }
         }
       }
     }
+    patch_config("", patch_body)
+  end
 
-    patch_config("", config)
+  # Remove a proxy route by container_name (container_name)
+  def remove_proxy(container_name)
+    # Find the index of the route with the given @id
+    response = get_config
+    config = response[:json] || {}
+    routes = config.dig("apps", "http", "servers", "default", "routes") || []
+    idx = routes.find_index { |r| r["@id"] == container_name }
+    return unless idx
+
+    # Caddy API: DELETE /config/apps/http/servers/default/routes/{index}
+    path = "apps/http/servers/default/routes/#{idx}"
+    delete_config(path)
   end
 
   # Get current config (optionally at a path)
@@ -77,6 +107,15 @@ class CaddyService < BaseService
     response = send_request(uri, req)
     Rails.logger.info "CaddyService: Get config response - Code: #{response[:code]}"
     puts "Response", response
+    response
+  end
+
+  def get_config_by_id(container_name)
+    Rails.logger.info "CaddyService: Getting config for container_name: #{container_name}"
+    uri = URI.join(@endpoint, "/id/#{container_name}")
+    req = Net::HTTP::Get.new(uri)
+    response = send_request(uri, req)
+    Rails.logger.info "CaddyService: Get config by ID response - Code: #{response[:code]}"
     response
   end
 
@@ -166,6 +205,25 @@ class CaddyService < BaseService
       Rails.logger.warn "CaddyService: No config file found at #{CONFIG_PATH}"
       nil
     end
+  end
+
+  def create_default_config
+    Rails.logger.info "CaddyService: Creating default config"
+    default_config = {
+      "apps" => {
+        "http" => {
+          "servers" => {
+            "default" => {
+              "listen" => [ ":80" ],
+              "routes" => []
+            }
+          }
+        }
+      }
+    }
+    put_config("", default_config)
+  rescue StandardError => e
+    Rails.logger.error "CaddyService: Failed to create default config - #{e.message}"
   end
 
   def wait_for_service_ready

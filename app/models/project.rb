@@ -44,15 +44,12 @@ class Project < ApplicationRecord
     DockerService.instance.stop_container(container_name)
   end
 
+  def has_reverse_proxy?
+    CaddyService.instance.has_proxy?(container_name)
+  end
+
   def update_reverse_proxy
     Rails.logger.info "Updating Caddy configuration for project: #{name}"
-
-    existing_config = CaddyService.instance.get_config(container_name)
-
-    if saved_change_to_subdomain? && existing_config
-      # If the subdomain has changed, we need to remove the old proxy
-      CaddyService.instance.delete_config("id/#{container_name}")
-    end
 
     # Create/recreate configuration for current domain
     if subdomain.present?
@@ -61,6 +58,9 @@ class Project < ApplicationRecord
         "#{container_name}:#{internal_port}",
         container_name
       )
+    else
+      # Remove the existing proxy if no subdomain is set
+      CaddyService.instance.remove_proxy(container_name)
     end
 
     # Reload Caddy configuration
