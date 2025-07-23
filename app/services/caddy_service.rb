@@ -39,8 +39,6 @@ class CaddyService < BaseService
   end
 
   def add_proxy(hostname, upstream_url, route_id)
-    # route_id = "#{hostname.gsub('.', '_')}_proxy"
-
     config = {
       "apps" => {
         "http" => {
@@ -96,7 +94,7 @@ class CaddyService < BaseService
   end
 
   # Delete config at a specific path using DELETE /config/{path}
-  def delete_config(path: nil)
+  def delete_config(path = nil)
     Rails.logger.info "CaddyService: Deleting config at path: #{path}"
     uri = URI.join(@endpoint, "/config/#{path}")
     req = Net::HTTP::Delete.new(uri)
@@ -105,12 +103,6 @@ class CaddyService < BaseService
     response
   end
 
-
-
-  # Add or update config at a specific path (ID or pathname) using PUT /config/{path}
-  # The config_body must be the value for the path, not a hash with the path as a key.
-  # Example: To add a route with ID "myroute" to "apps/http/servers/srv0/routes/myroute",
-  # call: put_config("apps/http/servers/srv0/routes/myroute", route_object)
   def put_config(path, config_body)
     Rails.logger.info "CaddyService: Putting config at path: #{path}"
     uri = URI.join(@endpoint, "/config/#{path}")

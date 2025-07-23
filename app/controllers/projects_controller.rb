@@ -9,7 +9,7 @@ class ProjectsController < ApplicationController
   # GET /projects/1 or /projects/1.json
   def show
     @needs_deploy = !DockerService.container_exists?(@project.container_name)
-    @status = DockerService.container_status(@project.container_name)
+    @status = get_and_update_container_status
 
     # Sync database status with actual Docker status
     if @status != @project.status && @status.present?
@@ -63,7 +63,7 @@ class ProjectsController < ApplicationController
 
   # DELETE /projects/1 or /projects/1.json
   def destroy
-    if container_status(@project.container_name) == :running
+    if get_and_update_container_status == "running"
       @project.stop
     end
 
@@ -82,14 +82,13 @@ class ProjectsController < ApplicationController
     image = @project.docker_image
 
     success = DockerService.deploy_container(container_name, image, internal_port, external_port)
+    get_and_update_container_status
     if success
       # Get the actual status after deployment
-      new_status = DockerService.container_status(container_name)
-      @project.update(status: new_status || "error")
+      redirect_to @project, notice: success ? "Deployment started!" : "Deployment failed!"
     else
-      @project.update(status: "error")
+      redirect_to @project, alert: "Failed to deploy project. Check logs for details."
     end
-    redirect_to @project, notice: success ? "Deployment started!" : "Deployment failed!"
   end
 
   def start
@@ -115,7 +114,6 @@ class ProjectsController < ApplicationController
   end
 
 
-
   private
     def set_project
       @project = Project.find(params[:id])
@@ -133,5 +131,10 @@ class ProjectsController < ApplicationController
     def should_redeploy?
       return false if @project.status == "not_deployed"
       DockerService.container_exists?(@project.container_name)
+    end
+
+    def get_and_update_container_status
+      @status = DockerService.container_status(@project.container_name)
+      @project.update(status: @status) if @status
     end
 end

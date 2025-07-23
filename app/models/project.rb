@@ -49,7 +49,9 @@ class Project < ApplicationRecord
   def update_reverse_proxy
     Rails.logger.info "Updating Caddy configuration for project: #{name}"
 
-    if saved_change_to_subdomain? && CaddyService.instance.get_config(saved_changes["subdomain"][0])
+    existing_config = CaddyService.instance.get_config(container_name)
+
+    if saved_change_to_subdomain? && existing_config
       # If the subdomain has changed, we need to remove the old proxy
       CaddyService.instance.delete_config("id/#{container_name}")
     end
