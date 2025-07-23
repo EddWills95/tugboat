@@ -40,7 +40,21 @@
   </div>
 
   <!-- Link always at bottom with spacing -->
-  <div class="mt-6 pt-4 border-t border-gray-200">
-    <%= link_to "View Details", project, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+  <div class="mt-6 pt-4 border-t border-gray-200 flex space-x-4">
+    <%= link_to edit_project_path(project), class: "text-gray-500 hover:text-blue-700", title: "Edit Project" do %>
+      <!-- Heroicons solid pencil -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M17.414 2.586a2 2 0 0 0-2.828 0l-1.793 1.793 2.828 2.828 1.793-1.793a2 2 0 0 0 0-2.828zM2 13.586V17h3.414l9.793-9.793-2.828-2.828L2 13.586z" />
+      </svg>
+    <% end %>
+    <% if project.subdomain.present? %>
+      <%= link_to "http://#{project.subdomain}.localhost", target: "_blank", rel: "noopener", class: "text-gray-500 hover:text-blue-700", title: "Open #{project.subdomain}.localhost" do %>
+        <!-- Heroicons solid arrow-top-right-on-square -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M13 7h4a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a1 1 0 1 1 0 2H5v12h12V8a1 1 0 0 1 1-1z"/>
+          <path d="M17 7V3a1 1 0 0 0-1-1h-4a1 1 0 1 0 0 2h1.586l-7.293 7.293a1 1 0 0 0 1.414 1.414L15 5.414V7a1 1 0 1 0 2 0z"/>
+        </svg>
+      <% end %>
+    <% end %>
   </div>
 </div>
