@@ -12,14 +12,19 @@ class BaseService
   end
 
   def start
-    DockerService.start_container(docker_name)
+    docker_service.start_container(docker_name)
   end
 
   def stop
-    DockerService.stop_container(docker_name)
+    docker_service.stop_container(docker_name)
   end
 
   def status
-    DockerService.container_status(docker_name)
+    docker_service.container_status(docker_name)
+  end
+
+  private
+  def docker_service
+    @docker_service ||= DockerService.instance
   end
 end

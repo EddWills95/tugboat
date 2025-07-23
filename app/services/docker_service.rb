@@ -1,21 +1,22 @@
 # app/services/docker_service.rb
 require "docker"
+require "singleton"
 
 class DockerService
-  def self.get_container(name)
+  include Singleton
+
+  def get_container(name)
     Docker::Container.get(name)
   rescue Docker::Error::NotFoundError
     Rails.logger.error "Container #{name} not found."
     nil
   end
 
-  def self.container_status(name)
+  def container_status(name)
     container = get_container(name)
     if container.nil?
       return "not_found"
     end
-
-    puts container.info.inspect()
 
     container.info["State"]["Status"]
   rescue => e
@@ -23,7 +24,7 @@ class DockerService
     "error"
   end
 
-  def self.start_container(name)
+  def start_container(name)
     container = get_container(name)
     return false unless container
 
@@ -34,13 +35,13 @@ class DockerService
     false
   end
 
-  def self.restart_container(name)
+  def restart_container(name)
     container = get_container(name)
     container.restart
     true
   end
 
-  def self.deploy_container(name, image, internal_port, external_port)
+  def deploy_container(name, image, internal_port, external_port)
     # Remove existing container if it exists
     if container_exists?(name)
       remove_container(name)
@@ -76,7 +77,7 @@ class DockerService
     false
   end
 
-  def self.stop_container(name)
+  def stop_container(name)
     container = get_container(name)
     return false unless container
 
@@ -87,14 +88,14 @@ class DockerService
     false
   end
 
-  def self.container_logs(name, tail: 100)
+  def container_logs(name, tail: 100)
     container = get_container(name)
     container.logs(stdout: true, stderr: true, tail: tail)
   rescue Docker::Error::NotFoundError
     "Logs unavailable. Container not found."
   end
 
-  def self.stream_container_logs(name, tail: 100)
+  def stream_container_logs(name, tail: 100)
     container = get_container(name)
     return unless container
     begin
@@ -107,7 +108,7 @@ class DockerService
   end
 
 
-  def self.remove_container(name)
+  def remove_container(name)
     container = get_container(name)
     container.delete(force: true)
     true
@@ -115,7 +116,7 @@ class DockerService
     false
   end
 
-  def self.container_exists?(name)
+  def container_exists?(name)
     !!get_container(name)
   end
 

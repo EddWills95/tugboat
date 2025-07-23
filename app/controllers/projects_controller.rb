@@ -8,21 +8,13 @@ class ProjectsController < ApplicationController
 
   # GET /projects/1 or /projects/1.json
   def show
-    @needs_deploy = !DockerService.container_exists?(@project.container_name)
-    @status = get_and_update_container_status
-
-    # Sync database status with actual Docker status
-    if @status != @project.status && @status.present?
-      @project.update_column(:status, @status)
-    end
+    @needs_deploy = !docker_service.container_exists?(@project.container_name)
 
     @project_url = "http://#{@project.subdomain}.localhost"
 
-    # @ddns_base_domain = DdnsSettings.instance_values["base_domain"]
-
-    Rails.logger.info "Container status for #{@project.container_name}: #{@status}"
+    Rails.logger.info "Container status for #{@project.container_name}: #{@project.status}"
     if @status == "running"
-      @logs = DockerService.container_logs(@project.container_name)
+      @logs = docker_service.container_logs(@project.container_name)
     else
       @logs = "Logs unavailable. Container is not running."
     end
@@ -81,7 +73,7 @@ class ProjectsController < ApplicationController
     external_port = @project.external_port
     image = @project.docker_image
 
-    success = DockerService.deploy_container(container_name, image, internal_port, external_port)
+    success = docker_service.deploy_container(container_name, image, internal_port, external_port)
     get_and_update_container_status
     if success
       # Get the actual status after deployment
@@ -92,29 +84,21 @@ class ProjectsController < ApplicationController
   end
 
   def start
-    success = DockerService.start_container(@project.container_name)
-    if success
-      new_status = DockerService.container_status(@project.container_name)
-      @project.update(status: new_status) if new_status
-    end
+    success = docker_service.start_container(@project.container_name)
     redirect_to @project, notice: success ? "Project started successfully!" : "Failed to start project."
   end
 
   def stop
-    success = DockerService.stop_container(@project.container_name)
-    if success
-      new_status = DockerService.container_status(@project.container_name)
-      @project.update(status: new_status) if new_status
-    end
+    success = docker_service.stop_container(@project.container_name)
     redirect_to @project, notice: success ? "Project stopped successfully!" : "Failed to stop project."
-  end
-
-  def container_status(container_name)
-    DockerService.container_status(container_name)
   end
 
 
   private
+    def docker_service
+      @docker_service ||= DockerService.instance
+    end
+
     def set_project
       @project = Project.find(params[:id])
     end
@@ -124,17 +108,12 @@ class ProjectsController < ApplicationController
     end
 
     def delete_docker_container
-      success = DockerService.remove_container(@project.container_name)
+      success = docker_service.remove_container(@project.container_name)
       redirect_to @projects, notice: (!success ? "Failed to start project." : nil)
     end
 
     def should_redeploy?
       return false if @project.status == "not_deployed"
-      DockerService.container_exists?(@project.container_name)
-    end
-
-    def get_and_update_container_status
-      @status = DockerService.container_status(@project.container_name)
-      @project.update(status: @status) if @status
+      docker_service.container_exists?(@project.container_name)
     end
 end

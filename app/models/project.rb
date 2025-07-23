@@ -11,6 +11,7 @@ class Project < ApplicationRecord
   # Callbacks
   after_save :update_reverse_proxy
 
+
   # Set default status after initialization
   after_initialize :set_default_status, if: :new_record?
 
@@ -23,27 +24,24 @@ class Project < ApplicationRecord
     self.internal_port = value unless internal_port.present?
   end
 
-  def live_status
-    result = `docker inspect -f '{{.State.Status}}' #{container_name} 2>/dev/null`.strip
-    result.present? ? result : "not created"
+
+  def status
+    DockerService.instance.container_status(container_name)
   end
+
 
   def is_running
     live_status == "running"
   end
 
+
   def start
-    container_name = self.container_name
-    success = system("docker start #{container_name} > /dev/null 2>&1")
-    update(status: success ? "running" : "error")
-    success
+    DockerService.instance.start_container(container_name)
   end
 
+
   def stop
-    container_name = self.container_name
-    success = system("docker stop #{container_name} > /dev/null 2>&1")
-    update(status: success ? "stopped" : "error")
-    success
+    DockerService.instance.stop_container(container_name)
   end
 
   def update_reverse_proxy

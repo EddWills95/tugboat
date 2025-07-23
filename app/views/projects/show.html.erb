@@ -30,7 +30,7 @@
       <div class="bg-gray-50 p-4 rounded">
         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Status</h3>
         <p class="mt-1 text-lg font-semibold">
-          <% case @status %>
+          <% case @project.status %>
           <% when 'running' %>
             <span class="text-green-600">● Running</span>
           <% when 'stopped', 'exited' %>
@@ -69,7 +69,7 @@
           Deploy Project
         <% end %>
       <% end %>
-      <% case @status %>
+      <% case @project.status %>
       <% when "not_found", "not_deployed" %>
       <% when "stopped", "exited" %>
         <%= button_to start_project_path(@project), method: :post, data: { turbo: false }, class: "bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded inline-flex items-center" do %>
