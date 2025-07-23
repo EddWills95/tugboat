@@ -6,7 +6,6 @@ require "singleton"
 
 
 class CaddyService < BaseService
-  include Singleton
   @endpoint = "http://localhost:2019"
 
   def initialize

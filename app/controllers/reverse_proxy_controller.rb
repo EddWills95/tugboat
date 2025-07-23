@@ -1,10 +1,6 @@
 class ReverseProxyController < ApplicationController
   def index
     @status = CaddyService.status
-  end
-
-  def index
-    @status = CaddyService.status
     raw_config = CaddyService.instance.get_config
     @proxy_config = JSON.pretty_generate(raw_config[:json]) if raw_config[:json]
   end

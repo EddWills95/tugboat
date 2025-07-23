@@ -15,6 +15,8 @@ class DockerService
       return "not_found"
     end
 
+    puts container.info.inspect()
+
     container.info["State"]["Status"]
   rescue => e
     Rails.logger.error "Error getting container status for #{name}: #{e.message}"

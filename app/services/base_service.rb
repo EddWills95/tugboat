@@ -1,5 +1,8 @@
+require "singleton"
 
 class BaseService
+  include Singleton
+
   def self.service_name
     "base"
   end

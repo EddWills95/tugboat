@@ -1,12 +1,8 @@
 <div class="p-8">
   <h1 class="text-2xl font-bold mb-4">Caddy / Reverse Proxy Service</h1>
   <div class="mb-4">
-    <span class="font-semibold">Status:</span>
-    <% if @caddy_status %>
-      <span class="text-green-600">Running</span>
-    <% else %>
-      <span class="text-red-600">Not Running</span>
-    <% end %>
+    <span class="font-semibold">Status:</span>    
+      <span class="text-green-600"><%= @status %></span>  
   </div>
   <div class="flex space-x-2 mb-6">
     <%= button_to 'Start', start_reverse_proxy_path, method: :post, class: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700' %>
