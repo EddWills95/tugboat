@@ -89,6 +89,15 @@ class CaddyService < BaseService
     response
   end
 
+  def delete_by_id(id)
+    Rails.logger.info "CaddyService: Deleting config by ID: #{id}"
+    uri = URI.join(@endpoint, "/#{id}")
+    req = Net::HTTP::Delete.new(uri)
+    response = send_request(uri, req)
+    Rails.logger.info "CaddyService: Delete by ID response - Code: #{response[:code]}"
+    response
+  end
+
 
   # Add or update config at a specific path (ID or pathname) using PUT /config/{path}
   # The config_body must be the value for the path, not a hash with the path as a key.
