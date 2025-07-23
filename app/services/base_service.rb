@@ -3,23 +3,23 @@ require "singleton"
 class BaseService
   include Singleton
 
-  def self.service_name
+  def service_name
     "base"
   end
 
-  def self.docker_name
+  def docker_name
     "tugboat-#{service_name}"
   end
 
-  def self.start
+  def start
     DockerService.start_container(docker_name)
   end
 
-  def self.stop
+  def stop
     DockerService.stop_container(docker_name)
   end
 
-  def self.status
+  def status
     DockerService.container_status(docker_name)
   end
 end

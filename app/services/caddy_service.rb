@@ -6,18 +6,35 @@ require "singleton"
 
 
 class CaddyService < BaseService
+  CONFIG_PATH = Rails.root.join("data", "caddy_config.json")
   @endpoint = "http://localhost:2019"
 
+  # On initialization, load config from file if it exists
   def initialize
     super
     @endpoint = "http://localhost:2019"
   end
 
-  def self.service_name
+  def start
+    super
+    wait_for_service_ready
+    load_config_from_file if File.exist?(CONFIG_PATH)
+  rescue StandardError => e
+    Rails.logger.error "CaddyService: Failed to start Caddy - #{e.message}"
+    raise e
+  end
+
+  # Overwrite the base class to save the config before teardown
+  def stop
+    save_config_to_file
+    super
+  end
+
+  def service_name
     "caddy"
   end
 
-  def self.docker_name
+  def docker_name
     "tugboat-#{service_name}"
   end
 
@@ -88,14 +105,6 @@ class CaddyService < BaseService
     response
   end
 
-  def delete_by_id(id)
-    Rails.logger.info "CaddyService: Deleting config by ID: #{id}"
-    uri = URI.join(@endpoint, "/#{id}")
-    req = Net::HTTP::Delete.new(uri)
-    response = send_request(uri, req)
-    Rails.logger.info "CaddyService: Delete by ID response - Code: #{response[:code]}"
-    response
-  end
 
 
   # Add or update config at a specific path (ID or pathname) using PUT /config/{path}
@@ -117,55 +126,77 @@ class CaddyService < BaseService
     response
   end
 
-
-  # Build a minimal Caddy JSON config for a hostname and reverse_proxy target
-  def self.build_reverse_proxy_config(hostname, name, proxy_to:, listen: ":80")
-    route = {
-      "match" => [
-        { "host" => [ hostname ] }
-      ],
-      "handle" => [
-        {
-          "handler" => "reverse_proxy",
-          "upstreams" => [
-            { "dial" => proxy_to }
-          ]
-        }
-      ]
-    }
-    route["@id"] = name
-    {
-      "apps" => {
-        "http" => {
-          "servers" => {
-            "srv0" => {
-              "listen" => [ listen ],
-              "routes" => [ route ]
-            }
-          }
-        }
+  private
+  # Helper to send HTTP requests
+  def send_request(uri, req)
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
+      res = http.request(req)
+      {
+        code: res.code.to_i,
+        body: res.body,
+        json: (JSON.parse(res.body) rescue nil)
       }
+    end
+  rescue StandardError => e
+    Rails.logger.error "CaddyService: Request failed - #{e.class}: #{e.message}"
+    {
+      code: 0,
+      body: nil,
+      json: nil,
+      error: e.message
     }
   end
 
-
-    # Helper to send HTTP requests
-    def send_request(uri, req)
-      Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
-        res = http.request(req)
-        {
-          code: res.code.to_i,
-          body: res.body,
-          json: (JSON.parse(res.body) rescue nil)
-        }
-      end
-    rescue StandardError => e
-      Rails.logger.error "CaddyService: Request failed - #{e.class}: #{e.message}"
-      {
-        code: 0,
-        body: nil,
-        json: nil,
-        error: e.message
-      }
+  # Save current Caddy config to JSON file
+  def save_config_to_file
+    response = get_config
+    if response[:code] == 200 && response[:body].present?
+      FileUtils.mkdir_p(File.dirname(CONFIG_PATH))
+      File.write(CONFIG_PATH, response[:body])
+      Rails.logger.info "CaddyService: Saved config to #{CONFIG_PATH}"
+    else
+      Rails.logger.warn "CaddyService: Could not save config, response: #{response.inspect}"
     end
+  end
+
+  # Load config from JSON file and POST to /load
+  def load_config_from_file
+    if File.exist?(CONFIG_PATH)
+      config_json = File.read(CONFIG_PATH)
+      Rails.logger.info "CaddyService: Loading config from file: #{CONFIG_PATH}"
+      uri = URI.join(@endpoint, "/load")
+      req = Net::HTTP::Post.new(uri)
+      req["Content-Type"] = "application/json"
+      req.body = config_json
+      response = send_request(uri, req)
+      Rails.logger.info "CaddyService: Loaded config from file, response: #{response[:code]}"
+      response
+    else
+      Rails.logger.warn "CaddyService: No config file found at #{CONFIG_PATH}"
+      nil
+    end
+  end
+
+  def wait_for_service_ready
+    max_attempts = 30
+    attempt = 0
+    loop do
+      attempt += 1
+      begin
+        uri = URI.join(@endpoint, "/config/")
+        req = Net::HTTP::Get.new(uri)
+        response = send_request(uri, req)
+        break if response[:code] == 200
+      rescue StandardError => e
+        Rails.logger.debug "CaddyService: Waiting for service (attempt #{attempt}/#{max_attempts}): #{e.message}"
+      end
+
+      if attempt >= max_attempts
+        raise "CaddyService: Service failed to start after #{max_attempts} attempts"
+      end
+
+      sleep 1
+    end
+    Rails.logger.info "CaddyService: Service is ready after #{attempt} attempts"
+  end
 end

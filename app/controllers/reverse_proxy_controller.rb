@@ -1,22 +1,17 @@
 class ReverseProxyController < ApplicationController
   def index
-    @status = CaddyService.status
+    @status = CaddyService.instance.status
     raw_config = CaddyService.instance.get_config
     @proxy_config = JSON.pretty_generate(raw_config[:json]) if raw_config[:json]
   end
 
-  def reload
-    CaddyService.instance.reload
-    redirect_to reverse_proxy_path, notice: "Caddy config reloaded."
-  end
-
   def start
-    CaddyService.start
+    CaddyService.instance.start
     redirect_to reverse_proxy_path, notice: "Caddy started."
   end
 
   def stop
-    CaddyService.stop
+    CaddyService.instance.stop
     redirect_to reverse_proxy_path, notice: "Caddy stopped."
   end
 
