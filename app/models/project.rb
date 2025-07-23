@@ -46,27 +46,20 @@ class Project < ApplicationRecord
     success
   end
 
-  # Domain and URL methods
-  def full_domain
-    return custom_domain if custom_domain.present?
-    return "#{subdomain}.#{ddns_settings.base_domain}" if subdomain.present? && ddns_settings.configured?
-    nil
-  end
-
-  def url
-    return nil unless full_domain
-    protocol = ssl_enabled? ? "https" : "http"
-    "#{protocol}://#{full_domain}"
-  end
-
   def update_reverse_proxy
     Rails.logger.info "Updating Caddy configuration for project: #{name}"
-    if self.subdomain.present?
-      local_project_url = "#{self.container_name}:#{self.internal_port}"
-      ReverseProxyService.add_new_config_block("http://#{self.subdomain}.localhost", local_project_url)
-    else
-      Rails.logger.info "No subdomain set for project #{@project.name}, skipping Caddy configuration."
+
+    # Create/recreate configuration for current domain
+    if subdomain.present?
+      CaddyService.instance.add_proxy(
+        "#{subdomain}.localhost",
+        "#{container_name}:#{internal_port}",
+        container_name
+      )
     end
+
+    # Reload Caddy configuration
+    # CaddyConfig.reload
   end
 
   private

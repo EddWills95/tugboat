@@ -33,15 +33,17 @@ services:
   #     timeout: 10s
   #     retries: 3
 
-  reverse-proxy:
+  caddy:
     image: caddy:2
-    container_name: tugboat-reverse-proxy
+    container_name: tugboat-caddy
     ports:
       - "80:80"
       - "2019:2019"
     volumes:
       - caddy_data:/data
-      - ./data/proxy:/config
+      - caddy_config:/config
+    environment:
+      - CADDY_ADMIN=0.0.0.0:2019
     restart: unless-stopped
     networks:
       - tugboat-network
@@ -55,3 +57,4 @@ networks:
 volumes:
   pgdata:
   caddy_data:
+  caddy_config:
