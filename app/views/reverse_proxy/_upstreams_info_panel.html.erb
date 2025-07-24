@@ -1,0 +1,22 @@
+<%# app/views/reverse_proxy/_upstreams_info_panel.html.erb %>
+<% if @proxy_routes.present? %>
+  <div>
+    <h3 class="text-lg font-semibold mb-2">Reverse Proxy Routes</h3>
+    <ul class="divide-y divide-gray-200">
+      <% @proxy_routes.each do |route| %>
+        <li class="py-2 flex items-center gap-2">
+          <span class="font-mono text-sm text-gray-800"><%= route[:host] %></span>
+          <span class="mx-1">&#8594;</span>
+          <span class="font-mono text-sm text-gray-800"><%= route[:dial] %></span>
+          <% if route[:project] %>
+            <span class="ml-2">
+              <%= link_to 'View Project', project_path(route[:project]), class: 'text-blue-600 hover:underline text-xs' %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% else %>
+  <div class="text-gray-500 text-sm">No proxy routes found.</div>
+<% end %>

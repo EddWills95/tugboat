@@ -10,8 +10,8 @@
   <% end %>
 <% end %>
 
+<h2 class="text-2xl font-bold mb-4">Caddy / Reverse Proxy</h2>
 <%= render partial: 'shared/service_panel', locals: {
-  title: 'Caddy / Reverse Proxy Service',
   status: @status,
   start_path: start_reverse_proxy_path,
   stop_path: stop_reverse_proxy_path,
@@ -19,3 +19,23 @@
   clean_label: 'Wipe Config',
   config_form: config_form
 } %>
+
+<% if @proxy_routes.present? %>
+  <div class="mt-6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+    <h3 class="text-lg font-semibold mb-2">Reverse Proxy Routes</h3>
+    <ul class="divide-y divide-gray-200">
+      <% @proxy_routes.each do |route| %>
+        <li class="py-2 flex items-center gap-2">
+          <span class="font-mono text-sm text-gray-800"><%= route[:host] %></span>
+          <span class="mx-1">&#8594;</span>
+          <span class="font-mono text-sm text-gray-800"><%= route[:dial] %></span>
+          <% if route[:project] %>
+            <span class="ml-2">
+              <%= link_to 'View Project', project_path(route[:project]), class: 'text-blue-600 hover:underline text-xs' %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

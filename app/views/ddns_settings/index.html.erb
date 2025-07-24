@@ -25,8 +25,8 @@
   </div>
 <% end %>
 
+<h2 class="text-2xl font-bold mb-4">Dynamic DNS</h2>
 <%= render partial: 'shared/service_panel', locals: {
-  title: 'Dynamic DNS Service',
   status: @status,
   start_path: start_ddns_settings_path,
   stop_path: stop_ddns_settings_path,

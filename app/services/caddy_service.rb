@@ -157,6 +157,16 @@ class CaddyService < BaseService
     response
   end
 
+  # Fetch reverse proxy upstreams from the Caddy API
+  def get_reverse_proxy_upstreams
+    Rails.logger.info "CaddyService: Getting reverse proxy upstreams"
+    uri = URI.join(@endpoint, "/reverse_proxy/upstreams")
+    req = Net::HTTP::Get.new(uri)
+    response = send_request(uri, req)
+    Rails.logger.info "CaddyService: Get reverse proxy upstreams response - Code: #{response[:code]}"
+    response
+  end
+
   private
   # Helper to send HTTP requests
   def send_request(uri, req)
