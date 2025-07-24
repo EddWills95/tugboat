@@ -1,0 +1,42 @@
+<div class="max-w-4xl mx-auto bg-gray-50 p-6 rounded-lg">
+  <h2 class="text-2xl font-bold mb-4"><%= title %></h2>
+  <div class="flex flex-col lg:flex-row gap-6">
+    <!-- Actions/Info Panel -->
+    <div class="lg:w-1/3 w-full order-1 lg:order-2 flex flex-col gap-4 bg-white border border-gray-200 rounded-lg shadow-sm p-4 self-start">
+      <% if content_for?(:info_panel) %>
+        <%= yield :info_panel %>
+      <% end %>
+      <% if defined?(status) && status.present? %>
+        <div>
+          <span class="font-semibold">Status:</span>
+          <span class="<%= status == 'running' ? 'text-green-600' : 'text-gray-600' %>"><%= status %></span>
+        </div>
+      <% end %>
+      <div class="flex flex-wrap gap-2">
+        <% _start_label = (defined?(start_label) && start_label.present?) ? start_label : 'Start Service' %>
+        <% _stop_label = (defined?(stop_label) && stop_label.present?) ? stop_label : 'Stop Service' %>
+        <% if defined?(start_path) && defined?(stop_path) %>
+          <% if status == 'running' %>
+            <%= button_to _stop_label, stop_path, method: :post, class: 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700' %>
+          <% else %>
+            <%= button_to _start_label, start_path, method: :post, class: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700' %>
+          <% end %>
+        <% end %>
+        <% if defined?(clean_path) %>
+          <%= button_to clean_label || 'Wipe Config', clean_path, method: :post, class: 'px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700' %>
+        <% end %>
+      </div>
+    </div>
+    <!-- Config/Form Panel -->
+    <div class="lg:w-2/3 w-full order-2 lg:order-1 bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+      <% if defined?(config_form) && config_form %>
+        <%= config_form %>
+      <% elsif defined?(config_content) %>
+        <div>
+          <h3 class="text-lg font-semibold mb-2">Config File</h3>
+          <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"><%= config_content.presence || 'No config file found.' %></pre>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

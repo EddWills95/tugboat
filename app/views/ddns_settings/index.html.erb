@@ -1,36 +1,34 @@
 <%# app/views/ddns_settings/index.html.erb %>
-<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-  <h2 class="text-2xl font-bold mb-4">Dynamic DNS Service</h2>
+<%# Compose the config form for the partial %>
+<% config_form = capture do %>
+  <p class="mb-4 text-gray-700">Paste your Dynamic DNS config below. This will be passed to the DDNS container. You can start or stop the service as needed.</p>
+  <p class="mb-4 text-sm text-gray-500">
+    <a class="" target="_blank" href="https://hub.docker.com/r/qmcgaw/ddns-updater/">Config Options</a>
+  </p>
+  <%= form_with url: ddns_settings_path, method: :post, local: true do |form| %>
+    <div class="mb-4">
+      <%= form.label :config_json, "DDNS Config (JSON)", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_area :config_json, value: @config_json, rows: 10, class: "mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 font-mono text-xs disabled:opacity-50 disabled:cursor-not-allowed", disabled: @status != 'running' %>
+    </div>
+    <%= form.submit "Save Config", class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed", disabled: @status != 'running' %>
+  <% end %>
+<% end %>
+
+<% content_for :info_panel do %>
+  <div>
     <p>Current WAN IP: <span class="font-mono text-sm"><%= @current_ip %></span></p>
     <% if @settings_ui.present? %>
       <p class="mb-2 text-sm">
         <a href="<%= @settings_ui %>" target="_blank" class="text-blue-600 hover:underline">View DDNS Admin</a>
       </p>
     <% end %>
-    
-  <p class="mb-4 text-gray-700">Paste your Dynamic DNS config below. This will be passed to the DDNS container. You can start or stop the service as needed.</p>
-  <p class="mb-4 text-sm text-gray-500">
-    <a class="" target="_blank" href="https://hub.docker.com/r/qmcgaw/ddns-updater/">Config Options</a>
-    </p>
+  </div>
+<% end %>
 
-  <%= form_with url: ddns_settings_path, method: :post, local: true do |form| %>
-    <div class="mb-4">
-      <%= form.label :config_json, "DDNS Config (JSON)", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_area :config_json, value: @config_json, rows: 10, class: "mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 font-mono text-xs" %>
-    </div>
-      <%= form.submit "Save Config", class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-  <% end %>
-    <div class="flex space-x-2">
-      <% if @status == 'running' %>
-        <%= button_to "Stop Service", stop_ddns_settings_path, method: :post, class: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" %>
-      <% else %>
-        <%= button_to "Start Service", start_ddns_settings_path, method: :post, class: "bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
-      <% end %>
-    </div>
-
-  <% if @status.present? %>
-    <div class="mt-4 p-2 bg-gray-100 rounded text-sm text-gray-700">
-      <strong>Status:</strong> <%= @status %>
-    </div>
-  <% end %>
-</div>
+<%= render partial: 'shared/service_panel', locals: {
+  title: 'Dynamic DNS Service',
+  status: @status,
+  start_path: start_ddns_settings_path,
+  stop_path: stop_ddns_settings_path,
+  config_form: config_form
+} %>

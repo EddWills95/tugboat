@@ -1,16 +1,21 @@
-<div class="p-8">
-  <h1 class="text-2xl font-bold mb-4">Caddy / Reverse Proxy Service</h1>
-  <div class="mb-4">
-    <span class="font-semibold">Status:</span>    
-      <span class="text-green-600"><%= @status %></span>  
-  </div>
-  <div class="flex space-x-2 mb-6">
-    <%= button_to 'Start', start_reverse_proxy_path, method: :post, class: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700' %>
-    <%= button_to 'Stop', stop_reverse_proxy_path, method: :post, class: 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700' %>
-    <%= button_to 'Wipe Config', clean_reverse_proxy_path, method: :post, class: 'px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700' %>
-  </div>
-  <div>
-    <h2 class="text-lg font-semibold mb-2">Caddy Config File</h2>
-    <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"><%= @proxy_config.presence || 'No config file found.' %></pre>
-  </div>
-</div>
+<%# app/views/reverse_proxy/index.html.erb %>
+<%# Compose the config form for the partial %>
+<% config_form = capture do %>
+  <%= form_with url: reverse_proxy_path, method: :post, local: true do |form| %>
+    <div class="mb-4">
+      <%= form.label :proxy_config, "Caddy Config (text)", class: "block text-sm font-medium text-gray-700" %>
+      <%= form.text_area :proxy_config, value: @proxy_config, rows: 10, class: "mt-1 block w-full rounded border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 font-mono text-xs disabled:opacity-50 disabled:cursor-not-allowed", disabled: @status != 'running' %>
+    </div>
+    <%= form.submit "Save Config", class: "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed", disabled: @status != 'running' %>
+  <% end %>
+<% end %>
+
+<%= render partial: 'shared/service_panel', locals: {
+  title: 'Caddy / Reverse Proxy Service',
+  status: @status,
+  start_path: start_reverse_proxy_path,
+  stop_path: stop_reverse_proxy_path,
+  clean_path: clean_reverse_proxy_path,
+  clean_label: 'Wipe Config',
+  config_form: config_form
+} %>
