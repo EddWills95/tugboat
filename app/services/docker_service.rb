@@ -35,6 +35,17 @@ class DockerService
     false
   end
 
+  def stop_container(name)
+    container = get_container(name)
+    return false unless container
+
+    container.stop
+    true
+  rescue => e
+    Rails.logger.error "Error stopping container #{name}: #{e.message}"
+    false
+  end
+
   def restart_container(name)
     container = get_container(name)
     container.restart
@@ -77,37 +88,6 @@ class DockerService
     false
   end
 
-  def stop_container(name)
-    container = get_container(name)
-    return false unless container
-
-    container.stop
-    true
-  rescue => e
-    Rails.logger.error "Error stopping container #{name}: #{e.message}"
-    false
-  end
-
-  def container_logs(name, tail: 100)
-    container = get_container(name)
-    container.logs(stdout: true, stderr: true, tail: tail)
-  rescue Docker::Error::NotFoundError
-    "Logs unavailable. Container not found."
-  end
-
-  def stream_container_logs(name, tail: 100)
-    container = get_container(name)
-    return unless container
-    begin
-      container.streaming_logs(stdout: true, stderr: true, tail: tail) do |stream, chunk|
-        yield "#{stream}: #{chunk}"
-      end
-    rescue Docker::Error::NotFoundError
-      yield "Logs unavailable. Container not found."
-    end
-  end
-
-
   def remove_container(name)
     container = get_container(name)
     container.delete(force: true)
@@ -120,8 +100,14 @@ class DockerService
     !!get_container(name)
   end
 
+  def container_logs(name, tail: 100)
+    container = get_container(name)
+    return "Container not found." unless container
 
-
-
-  # Add more Docker actions as needed, always sanitising input
+    logs = container.logs(stdout: true, stderr: true, tail: tail)
+    logs.force_encoding("UTF-8").encode('UTF-8', invalid: :replace, undef: :replace, replace: '?')
+  rescue => e
+    Rails.logger.error "Error fetching logs for container #{name}: #{e.message}"
+    "Error fetching logs."
+  end
 end
