@@ -7,6 +7,15 @@ class CaddyService < BaseService
   CONFIG_PATH = Rails.root.join("data", "caddy_config.json")
   @endpoint = "http://localhost:2019"
 
+  ## Define the Class methods and attributes
+  def service_name
+    "caddy"
+  end
+
+  def docker_name
+    "tugboat-#{service_name}"
+  end
+
   # On initialization, load config from file if it exists
   def initialize
     super
@@ -30,14 +39,6 @@ class CaddyService < BaseService
   def stop
     save_config_to_file
     super
-  end
-
-  def service_name
-    "caddy"
-  end
-
-  def docker_name
-    "tugboat-#{service_name}"
   end
 
   def has_proxy?(container_name)
