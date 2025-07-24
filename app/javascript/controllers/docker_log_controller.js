@@ -6,7 +6,8 @@ export default class extends Controller {
   connect() {
     console.log("Connecting to logs for:", this.containerValue);
 
-    App.cable.subscriptions.create(
+    // Store the subscription so we can unsubscribe later
+    this.subscription = App.cable.subscriptions.create(
       { channel: "DockerLogChannel", container: this.containerValue },
       {
         received: (data) => {
@@ -17,5 +18,12 @@ export default class extends Controller {
         },
       }
     );
+  }
+
+  disconnect() {
+    if (this.subscription) {
+      App.cable.subscriptions.remove(this.subscription);
+      this.subscription = null;
+    }
   }
 }

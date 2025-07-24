@@ -1,0 +1,8 @@
+<%# Shared partial for streaming logs for a given service/container %>
+<div class="mt-4">
+  <h3 class="text-md font-semibold mb-2">Service Logs</h3>
+  <div data-controller="docker-log" data-docker-log-container-value="<%= container_name %>"
+       class="bg-black text-green-200 font-mono text-xs rounded p-2 h-64 overflow-y-auto shadow-inner border border-gray-700 leading-relaxed">
+    <!-- Log lines will stream here via ActionCable -->
+  </div>
+</div>

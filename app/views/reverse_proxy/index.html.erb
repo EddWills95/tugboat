@@ -11,6 +11,7 @@
 <% end %>
 
 <h2 class="text-2xl font-bold mb-4">Caddy / Reverse Proxy</h2>
+
 <%= render partial: 'shared/service_panel', locals: {
   status: @status,
   start_path: start_reverse_proxy_path,
@@ -19,6 +20,8 @@
   clean_label: 'Wipe Config',
   config_form: config_form
 } %>
+
+<%= render partial: 'shared/service_logs', locals: { container_name: CaddyService.instance.docker_name } %>
 
 <% if @proxy_routes.present? %>
   <div class="mt-6 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">

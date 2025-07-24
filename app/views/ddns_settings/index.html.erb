@@ -26,9 +26,12 @@
 <% end %>
 
 <h2 class="text-2xl font-bold mb-4">Dynamic DNS</h2>
+
 <%= render partial: 'shared/service_panel', locals: {
   status: @status,
   start_path: start_ddns_settings_path,
   stop_path: stop_ddns_settings_path,
   config_form: config_form
 } %>
+
+<%= render partial: 'shared/service_logs', locals: { container_name: DdnsService.instance.docker_name } %>
