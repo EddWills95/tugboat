@@ -122,6 +122,12 @@
   <!-- Container Logs -->
   <div class="bg-white rounded-lg shadow-md p-6">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">Container Logs</h3>
-    <div id="logs-container" />
+    <div
+      id="log-output"
+      data-controller="docker-log"
+      data-docker-log-container-value="<%= @project.container_name %>"
+      class="p-2"
+      style="background: black; color: lime; height: 300px; overflow-y: scroll; font-family: monospace;"
+    ></div>
   </div>
 </div>

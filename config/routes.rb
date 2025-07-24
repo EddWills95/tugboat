@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount ActionCable.server => "/cable"
+
   # User Settings routes
   get "user_settings/edit", to: "user_settings#edit", as: :edit_user_settings
   patch "user_settings", to: "user_settings#update", as: :user_settings
