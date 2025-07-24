@@ -15,9 +15,7 @@
         <span class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium bg-green-100 text-green-800">
           <%= project.internal_port %>
         </span>
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-        </svg>
+        <%= image_tag 'icons/arrow-right.svg', class: 'w-4 h-4 mx-1', alt: 'to' %>
         <span class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium bg-blue-100 text-blue-800">
           <%= project.external_port %>
         </span>
@@ -44,18 +42,11 @@
   <!-- Link always at bottom with spacing -->
   <div class="mt-6 pt-4 border-t border-gray-200 flex space-x-4">
     <%= link_to edit_project_path(project), class: "text-gray-500 hover:text-blue-700", title: "Edit Project" do %>
-      <!-- Heroicons solid pencil -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M17.414 2.586a2 2 0 0 0-2.828 0l-1.793 1.793 2.828 2.828 1.793-1.793a2 2 0 0 0 0-2.828zM2 13.586V17h3.414l9.793-9.793-2.828-2.828L2 13.586z" />
-      </svg>
+      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.7 6.3l-4-4a1 1 0 0 0-1.4 0l-11 11A1 1 0 0 0 5 14v4a1 1 0 0 0 1 1h4a1 1 0 0 0 .7-.3l11-11a1 1 0 0 0 0-1.4zM7 17v-2.59l9-9L18.59 8l-9 9H7zm2.41-2.41l9-9L20.59 6l-9 9H9.41z"/></svg>
     <% end %>
     <% if project.subdomain.present? %>
       <%= link_to "http://#{project.subdomain}.localhost", target: "_blank", rel: "noopener", class: "text-gray-500 hover:text-blue-700", title: "Open #{project.subdomain}.localhost" do %>
-        <!-- Heroicons solid arrow-top-right-on-square -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M13 7h4a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9a1 1 0 1 1 0 2H5v12h12V8a1 1 0 0 1 1-1z"/>
-          <path d="M17 7V3a1 1 0 0 0-1-1h-4a1 1 0 1 0 0 2h1.586l-7.293 7.293a1 1 0 0 0 1.414 1.414L15 5.414V7a1 1 0 1 0 2 0z"/>
-        </svg>
+        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14 3v2h3.59l-9.3 9.29 1.42 1.42L19 6.41V10h2V3z"/><path d="M5 5v14h14v-7h-2v5H7V7h5V5z"/></svg>
       <% end %>
     <% end %>
   </div>
