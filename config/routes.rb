@@ -3,7 +3,17 @@ Rails.application.routes.draw do
   get "user_settings/edit", to: "user_settings#edit", as: :edit_user_settings
   patch "user_settings", to: "user_settings#update", as: :user_settings
 
-  # DDNS Settings feature is on hold
+
+  get "ddns_settings", to: "ddns_settings#index", as: :ddns_settings
+  post "ddns_settings", to: "ddns_settings#create"
+  post "ddns_settings/start", to: "ddns_settings#start", as: :start_ddns_settings
+  post "ddns_settings/stop", to: "ddns_settings#stop", as: :stop_ddns_settings
+
+  get "reverse_proxy", to: "reverse_proxy#index"
+  post "reverse_proxy/reload", to: "reverse_proxy#reload", as: :reload_reverse_proxy
+  post "reverse_proxy/start", to: "reverse_proxy#start", as: :start_reverse_proxy
+  post "reverse_proxy/stop", to: "reverse_proxy#stop", as: :stop_reverse_proxy
+  post "reverse_proxy/clean", to: "reverse_proxy#clean", as: :clean_reverse_proxy
 
   resources :projects do
     member do
@@ -14,6 +24,7 @@ Rails.application.routes.draw do
       get :refresh_logs
     end
   end
+
   devise_for :users
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -27,10 +38,4 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "home#index"
-
-  get "reverse_proxy", to: "reverse_proxy#index"
-  post "reverse_proxy/reload", to: "reverse_proxy#reload", as: :reload_reverse_proxy
-  post "reverse_proxy/start", to: "reverse_proxy#start", as: :start_reverse_proxy
-  post "reverse_proxy/stop", to: "reverse_proxy#stop", as: :stop_reverse_proxy
-  post "reverse_proxy/clean", to: "reverse_proxy#clean", as: :clean_reverse_proxy
 end
