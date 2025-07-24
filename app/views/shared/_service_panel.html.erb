@@ -1,31 +1,41 @@
-<div class="max-w-4xl mx-auto bg-gray-50 rounded-lg">
+<div class="max-w-4xl mx-auto bg-gray-50 rounded-lg ">
   <div class="flex flex-col lg:flex-row gap-6">
     <!-- Actions/Info Panel -->
     <div class="lg:w-1/3 w-full order-1 lg:order-2 flex flex-col gap-4 bg-white border border-gray-200 rounded-lg shadow-sm p-4 self-start">
-      <% if defined?(status) && status.present? %>
-        <div>
-          <span class="font-semibold">Status:</span>
-          <span class="<%= status == 'running' ? 'text-green-600' : 'text-gray-600' %>"><%= status %></span>
-        </div>
-      <% end %>
-      
-      <% if content_for?(:info_panel) %>
-        <%= yield :info_panel %>
-      <% end %>
-      
-      <div class="flex flex-wrap gap-2">
-        <% _start_label = (defined?(start_label) && start_label.present?) ? start_label : 'Start Service' %>
-        <% _stop_label = (defined?(stop_label) && stop_label.present?) ? stop_label : 'Stop Service' %>
-        <% if defined?(start_path) && defined?(stop_path) %>
-          <% if status == 'running' %>
-            <%= button_to _stop_label, stop_path, method: :post, class: 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700' %>
-          <% else %>
-            <%= button_to _start_label, start_path, method: :post, class: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700' %>
+      <div class="flex flex-col gap-3">
+        <% if defined?(status) && status.present? %>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold">Status:</span>
+            <span class="inline-block w-2 h-2 rounded-full <%= status == 'running' ? 'bg-green-500' : 'bg-gray-400' %>"></span>
+            <span class="<%= status == 'running' ? 'text-green-600' : 'text-gray-600' %>"><%= status %></span>
+          </div>
+        <% end %>
+
+        <% if content_for?(:info_panel) %>
+          <%= yield :info_panel %>
+        <% end %>
+
+        <%# Optional Documentation Link %>
+        <% if defined?(documentation_link) && documentation_link.present? %>
+          <div>
+            <a href="<%= documentation_link %>" target="_blank" class="text-blue-600 hover:underline text-sm">Documentation</a>
+          </div>
+        <% end %>
+
+        <div class="flex flex-wrap gap-2">
+          <% _start_label = (defined?(start_label) && start_label.present?) ? start_label : 'Start Service' %>
+          <% _stop_label = (defined?(stop_label) && stop_label.present?) ? stop_label : 'Stop Service' %>
+          <% if defined?(start_path) && defined?(stop_path) %>
+            <% if status == 'running' %>
+              <%= button_to _stop_label, stop_path, method: :post, class: 'px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700' %>
+            <% else %>
+              <%= button_to _start_label, start_path, method: :post, class: 'px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700' %>
+            <% end %>
           <% end %>
-        <% end %>
-        <% if defined?(clean_path) %>
-          <%= button_to clean_label || 'Wipe Config', clean_path, method: :post, class: 'px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700' %>
-        <% end %>
+          <% if defined?(clean_path) %>
+            <%= button_to clean_label || 'Wipe Config', clean_path, method: :post, class: 'px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700' %>
+          <% end %>
+        </div>
       </div>
     </div>
     <!-- Config/Form Panel -->

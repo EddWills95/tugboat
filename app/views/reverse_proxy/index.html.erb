@@ -18,7 +18,8 @@
   stop_path: stop_reverse_proxy_path,
   clean_path: clean_reverse_proxy_path,
   clean_label: 'Wipe Config',
-  config_form: config_form
+  config_form: config_form,
+  documentation_link: 'https://caddyserver.com/docs/'
 } %>
 
 <%= render partial: 'shared/service_logs', locals: { container_name: CaddyService.instance.docker_name } %>
