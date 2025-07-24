@@ -11,6 +11,7 @@ class DdnsSettingsController < ApplicationController
 
   def create
     DdnsService.instance.save_config(params)
+    DdnsService.instance.restart
     redirect_to ddns_settings_path, notice: "DDNS settings updated."
   end
 

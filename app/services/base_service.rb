@@ -19,6 +19,10 @@ class BaseService
     docker_service.stop_container(docker_name)
   end
 
+  def restart
+    docker_service.restart_container(docker_name)
+  end
+
   def status
     docker_service.container_status(docker_name)
   end
